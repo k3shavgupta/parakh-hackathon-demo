@@ -6,10 +6,11 @@ with a supplier, buyer, or logistics partner. That process is slow, unclear, and
 easy to overstate.
 
 This Build What Moves India demo gives judges a no-login Parakh journey using
-synthetic data only. Users choose one of five fake business scenarios, run a
-v4-style local engine, and receive a Parakh-style report with business profile,
-filing pattern, public-record/court-signal examples, observations, confidence,
-attribution, provenance, limitations, and "What we could not find."
+synthetic data only. Users enter or choose one of five fake synthetic
+GSTIN-style identifiers, open a dedicated report page, and receive a
+Parakh-style report with business profile, filing pattern, public-record/court
+signal examples, observations, confidence, attribution, provenance, limitations,
+and "What we could not find."
 
 The demo intentionally avoids scores, trust ratings, traffic-light judgments,
 creditworthiness verdicts, live government access, real GSTINs, PANs, Aadhaar

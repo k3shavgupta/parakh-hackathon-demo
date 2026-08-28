@@ -46,7 +46,7 @@ const fixtureSource =
 export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   {
     id: 'clear',
-    identifier: 'SYN-PARAKH-CLEAR-001',
+    identifier: 'SYN-GSTIN-CLEAR-001',
     shortName: 'Clean trading partner',
     scenarioType: 'Mostly clear business',
     judgePrompt:
@@ -119,7 +119,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   },
   {
     id: 'delayed',
-    identifier: 'SYN-PARAKH-DELAY-002',
+    identifier: 'SYN-GSTIN-DELAY-002',
     shortName: 'Delayed filings',
     scenarioType: 'Delayed filing pattern',
     judgePrompt:
@@ -183,7 +183,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   },
   {
     id: 'mismatch',
-    identifier: 'SYN-PARAKH-MISMATCH-003',
+    identifier: 'SYN-GSTIN-MISMATCH-003',
     shortName: 'Name mismatch',
     scenarioType: 'Identity/name mismatch',
     judgePrompt:
@@ -253,7 +253,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   },
   {
     id: 'court',
-    identifier: 'SYN-PARAKH-COURT-004',
+    identifier: 'SYN-GSTIN-COURT-004',
     shortName: 'Public-record signal',
     scenarioType: 'Public-record/court-signal example',
     judgePrompt:
@@ -333,7 +333,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   },
   {
     id: 'partial',
-    identifier: 'SYN-PARAKH-PARTIAL-005',
+    identifier: 'SYN-GSTIN-PARTIAL-005',
     shortName: 'Partial data',
     scenarioType: 'Partial or insufficient data',
     judgePrompt:

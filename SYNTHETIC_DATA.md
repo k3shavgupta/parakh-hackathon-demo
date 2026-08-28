@@ -10,11 +10,11 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 
 ## Scenarios
 
-- `SYN-PARAKH-CLEAR-001`: clean or mostly clear business.
-- `SYN-PARAKH-DELAY-002`: delayed filing pattern.
-- `SYN-PARAKH-MISMATCH-003`: identity/name mismatch.
-- `SYN-PARAKH-COURT-004`: public-record/court-signal example.
-- `SYN-PARAKH-PARTIAL-005`: partial or insufficient data.
+- `SYN-GSTIN-CLEAR-001`: clean or mostly clear business.
+- `SYN-GSTIN-DELAY-002`: delayed filing pattern.
+- `SYN-GSTIN-MISMATCH-003`: identity/name mismatch.
+- `SYN-GSTIN-COURT-004`: public-record/court-signal example.
+- `SYN-GSTIN-PARTIAL-005`: partial or insufficient data.
 
 ## What Is Fake
 
@@ -25,7 +25,7 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 
 ## Engine Rules
 
-- Accept only obvious synthetic identifiers.
+- Accept only obvious synthetic GSTIN-style identifiers.
 - Reject real-looking GSTIN, PAN, and Aadhaar-like inputs.
 - Normalize business names, dates, filing periods, and public-record parties.
 - Produce observations with only `FLAG`, `CLEAR`, and `NOTE`.

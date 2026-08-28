@@ -11,9 +11,9 @@ not access live government systems, private records, real GSTINs, PANs, Aadhaar
 numbers, OTPs, payments, or production Parakh data.
 
 I will choose a synthetic business scenario. The v4-style local engine accepts
-the synthetic identifier, loads local profile, filing, and public-record
-fixtures, normalizes names, dates, periods, and parties, and then generates a
-Parakh-style report.
+the synthetic GSTIN-style identifier, loads local profile, filing, and
+public-record fixtures, normalizes names, dates, periods, and parties, and then
+opens a Parakh-style report page.
 
 The report does not give a score or trust verdict. It uses only FLAG, CLEAR, and
 NOTE observations. Each observation includes confidence, attribution, and source
