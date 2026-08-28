@@ -101,6 +101,10 @@ function SectionCard({
   );
 }
 
+function openScenario(identifier: string) {
+  window.location.href = `/report/${encodeURIComponent(identifier)}`;
+}
+
 export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
   const delayed = report.filingPattern.rows.filter(
     (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
@@ -396,11 +400,12 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
           >
             <div className="grid gap-2">
               {SCENARIOS.map((scenario) => (
-                <Link
+                <button
                   key={scenario.identifier}
-                  href={`/report/${scenario.identifier}`}
+                  type="button"
+                  onClick={() => openScenario(scenario.identifier)}
                   className={cn(
-                    'rounded-[18px] border p-3 text-sm transition hover:bg-[#fbf8f5]',
+                    'rounded-[18px] border p-3 text-left text-sm transition hover:bg-[#fbf8f5]',
                     scenario.identifier === report.searchedIdentifier
                       ? 'border-[#7a336f] bg-[#fbf2f7]'
                       : 'border-[#f0e7ee] bg-white',
@@ -410,7 +415,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
                   <span className="mt-1 block text-[#7f7279]">
                     {scenario.shortName}
                   </span>
-                </Link>
+                </button>
               ))}
             </div>
           </SectionCard>
