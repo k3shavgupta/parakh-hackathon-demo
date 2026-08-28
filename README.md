@@ -1,0 +1,39 @@
+# Parakh Build What Moves India Demo
+
+This is a standalone public hackathon demo for Parakh. It is not the production
+Parakh app and does not use production data, auth, payments, databases, secrets,
+or live integrations.
+
+The demo gives judges an instant no-login journey:
+
+1. Open the site.
+2. Read the visible synthetic-data disclosure.
+3. Choose one of five fake business scenarios or enter a listed synthetic
+   identifier.
+4. Watch the v4-style local engine flow.
+5. Review a Parakh-style report with observations, evidence, provenance,
+   confidence, limitations, and "What we could not find."
+6. Switch scenarios, print the report, or download a text copy.
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Verification
+
+```bash
+npm test
+npm run build
+```
+
+## Data Boundary
+
+All scenario data is stored locally in `lib/synthetic-fixtures.ts`. Identifiers
+use the `SYN-PARAKH-*` pattern and are intentionally fake. Real-looking GSTIN,
+PAN, and Aadhaar-like values are rejected by the synthetic engine.
+
+See `SYNTHETIC_DATA.md`, `PRODUCTION_BOUNDARY.md`, `JUDGES_GUIDE.md`, and
+`SUBMISSION_SUMMARY.md`.
