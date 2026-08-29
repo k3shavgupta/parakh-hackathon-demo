@@ -42,5 +42,5 @@ only the selected synthetic fixture and makes no network request for report
 data. It includes the local, approved Parakh wordmark and typography assets so
 the fixture-only report follows the production report presentation.
 
-See `SYNTHETIC_DATA.md`, `PRODUCTION_BOUNDARY.md`, `JUDGES_GUIDE.md`, and
-`SUBMISSION_SUMMARY.md`.
+See `SYNTHETIC_DATA.md`, `PRODUCTION_BOUNDARY.md`, `JUDGES_GUIDE.md`,
+`SUBMISSION_SUMMARY.md`, and `VIDEO_SCRIPT.md`.
