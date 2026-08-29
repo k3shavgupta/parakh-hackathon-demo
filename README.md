@@ -4,6 +4,8 @@ This is a standalone public hackathon demo for Parakh. It is not the production
 Parakh app and does not use production data, auth, payments, databases, secrets,
 or live integrations.
 
+**Live demo:** [build.parakh.biz](https://build.parakh.biz)
+
 The demo gives judges an instant no-login journey:
 
 1. Open the site.
