@@ -47,6 +47,14 @@ The report stays the central product destination. It includes the demo reference
 
 Before routing to the report, a short generation sequence explains local fixture loading, filing interpretation, fictional court-candidate resolution, finding assembly, and report rendering. It must not imply a live lookup and must respect reduced-motion settings.
 
+## Native Synthetic PDF
+
+Add a native, selectable A4 PDF download generated from the same synthetic report model that powers the browser report. The attached production report is a read-only layout reference only; do not reuse, edit, rasterize, search-and-replace, or derive the demo PDF from it.
+
+The PDF adopts the inspected document's evidence-first rhythm: a restrained Parakh-style header and report reference, compact entity metadata strip, ruled finding rows, filing-period visual treatment, limitation band, and footer. It substitutes every production fact with synthetic fixture data and visibly marks itself `SYNTHETIC DEMO - NOT A REAL REGISTRATION`.
+
+It must be true A4 Chromium output with selectable/extractable text, printed backgrounds, matching synthetic report ID in toolbar/HTML/PDF/filename, no fabricated source links, and the disclosure on every page. The browser report and PDF share report data and presentation primitives; no image-based PDF or separate report template is permitted. Validate page size, text extraction, page count, PDF structure, and rendered PNG pages.
+
 ## Synthetic Evidence Lab
 
 Add `/synthetic-data` as an in-app evidence explainer. For every scenario it shows purpose, raw synthetic evidence, normalized engine input, report mappings, derived calculations, unavailable data, label rationale, provenance, a fixture-to-renderer flow, expandable/copyable JSON, and a report link.
@@ -57,4 +65,4 @@ Update the existing README, synthetic-data, production-boundary, judges-guide, a
 
 ## Verification
 
-Add and run focused checks for demo-reference routing, blocked real-like input, deterministic output, only allowed finding labels, no composite verdict, unavailable-evidence handling, no network access, scenario switching, disclosure visibility, print/download, and leakage of production identifiers or secrets. Validate desktop and mobile presentation and the deployed standalone site. Confirm production domains are read-only and undeployed by this work.
+Add and run focused checks for demo-reference routing, blocked real-like input, deterministic output, only allowed finding labels, no composite verdict, unavailable-evidence handling, no network access, scenario switching, disclosure visibility, print/download, synthetic PDF metadata/text/layout, and leakage of production identifiers or secrets. Validate desktop and mobile presentation and the deployed standalone site. Confirm production domains are read-only and undeployed by this work.
