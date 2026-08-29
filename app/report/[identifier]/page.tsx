@@ -24,15 +24,15 @@ export default async function SyntheticReportPage({
             No report fixture found
           </h1>
           <p className="mt-4 leading-7 text-[#675b63]">
-            This hackathon demo only accepts the listed synthetic GSTIN-style
-            identifiers. Real GSTINs, PANs, Aadhaar numbers, OTPs, and
+            This hackathon demo only accepts the five listed Demo References.
+            Real GSTINs, PANs, Aadhaar numbers, OTPs, and
             production Parakh data are not used.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex h-11 items-center rounded-full bg-[#201b1e] px-5 text-sm font-semibold text-white"
           >
-            Back to synthetic search
+            Back to demo search
           </Link>
         </section>
       </main>

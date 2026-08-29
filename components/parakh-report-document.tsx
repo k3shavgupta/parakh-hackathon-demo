@@ -27,7 +27,8 @@ function badgeClass(label: 'FLAG' | 'CLEAR' | 'NOTE') {
 function reportToText(report: SyntheticReport) {
   return [
     `Parakh synthetic report ${report.reportId}`,
-    `Synthetic GSTIN: ${report.searchedIdentifier}`,
+    `Demo reference: ${report.searchedIdentifier}`,
+    'SYNTHETIC DEMO - NOT A REAL REGISTRATION',
     `Generated: ${report.generatedAt}`,
     '',
     disclosure,
@@ -151,10 +152,11 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             <a
               href={downloadHref}
               download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
+              aria-label="Download compact text report"
               className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[var(--parakh-plum)] sm:px-4"
             >
               <Download className="size-4" />
-              Download
+              Download report
             </a>
           </div>
         </div>
@@ -178,7 +180,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
               <dl className="mt-6 grid gap-3 text-sm">
                 <div className="rounded-[18px] bg-white/80 p-4">
                   <dt className="font-semibold text-[#8b7c84]">
-                    Synthetic GSTIN
+                    Demo reference
                   </dt>
                   <dd className="mt-1 font-semibold">
                     {report.searchedIdentifier}
@@ -195,7 +197,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
               <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#f0e7ee] pb-4">
                 <div>
                   <p className="text-xs font-semibold uppercase text-[#9b8793]">
-                    GSTIN {report.searchedIdentifier} ·{' '}
+                    Demo reference {report.searchedIdentifier} ·{' '}
                     {report.business.registrationState}
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">
@@ -240,6 +242,10 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
         <div className="mt-6 rounded-[24px] bg-[#201b1e] p-5 text-sm leading-6 text-white sm:p-6">
           <strong>Synthetic-data disclosure:</strong> {disclosure}
         </div>
+
+        <p className="mt-4 text-center text-xs font-semibold tracking-[0.08em] text-[var(--parakh-plum-dark)]">
+          SYNTHETIC DEMO - NOT A REAL REGISTRATION
+        </p>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
           <SectionCard
@@ -391,7 +397,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
           </SectionCard>
 
           <SectionCard
-            title="Try another synthetic GSTIN"
+            title="Try another demo reference"
             kicker="Demo scenarios"
           >
             <div className="grid gap-2">
@@ -464,10 +470,14 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7a336f] px-5 text-sm font-semibold text-white"
           >
             <Download className="size-4" />
-            Download text
+            Download report
           </a>
         </div>
       </section>
+      <footer className="border-t border-[#efe4e9] px-5 py-6 text-center text-xs leading-5 text-[#776973]">
+        Synthetic demonstration generated from fictional fixture data. Not a
+        live GST, court, or company-record lookup.
+      </footer>
     </main>
   );
 }

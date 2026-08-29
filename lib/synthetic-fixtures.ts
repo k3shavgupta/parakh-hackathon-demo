@@ -20,6 +20,7 @@ export type RawPublicRecord = {
 };
 
 export type SyntheticScenario = {
+  synthetic: true;
   id: string;
   identifier: string;
   shortName: string;
@@ -45,20 +46,21 @@ const fixtureSource =
 
 export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
   {
+    synthetic: true,
     id: 'clear',
-    identifier: 'SYN-GSTIN-CLEAR-001',
+    identifier: 'DEMO-2026-0001',
     shortName: 'Clean trading partner',
     scenarioType: 'Mostly clear business',
     judgePrompt:
       'A regular components distributor with consistent synthetic filing history.',
     business: {
-      legalName: 'Aarav Precision Supplies Private Limited',
-      tradeName: 'Aarav Precision',
+      legalName: 'Parakh Demo Entity Udaan Components LLP',
+      tradeName: 'Udaan Components Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Uttar Pradesh',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Plot SYN-14, Cooperative Industrial Area, Kanpur',
-      nameVariants: ['Aarav Precision Supplies Pvt Ltd', 'Aarav Precision'],
+      syntheticAddress: 'Demo Plot 14, Cooperative Industrial Area, Kanpur',
+      nameVariants: ['Udaan Components LLP', 'Udaan Components Demo'],
       source: fixtureSource,
     },
     filings: [
@@ -100,10 +102,10 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
     publicRecords: [
       {
-        id: 'SYN-REG-CLEAR-011',
+        id: 'DEMO-REG-0001-A',
         category: 'registry',
         date: '2026-08-10',
-        parties: ['Aarav Precision Supplies Private Limited'],
+        parties: ['Parakh Demo Entity Udaan Components LLP'],
         signal: 'CLEAR',
         summary:
           'Synthetic registry name and trade-name aliases align with the searched identifier.',
@@ -118,22 +120,23 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
   },
   {
+    synthetic: true,
     id: 'delayed',
-    identifier: 'SYN-GSTIN-DELAY-002',
+    identifier: 'DEMO-2026-0002',
     shortName: 'Delayed filings',
     scenarioType: 'Delayed filing pattern',
     judgePrompt:
       'A supplier with repeated delayed synthetic filings across recent periods.',
     business: {
-      legalName: 'Navkaar Metro Components Private Limited',
-      tradeName: 'Navkaar Metro',
+      legalName: 'Parakh Demo Entity Navkaar Metro Components Private Limited',
+      tradeName: 'Navkaar Metro Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Maharashtra',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Unit SYN-8, Western Supply Cluster, Pune',
+      syntheticAddress: 'Demo Unit 8, Western Supply Cluster, Pune',
       nameVariants: [
-        'Navkar Metro Components Pvt Ltd',
-        'Navkaar Metro Components',
+        'Navkaar Metro Components Pvt Ltd',
+        'Navkaar Metro Demo',
       ],
       source: fixtureSource,
     },
@@ -182,23 +185,24 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
   },
   {
+    synthetic: true,
     id: 'mismatch',
-    identifier: 'SYN-GSTIN-MISMATCH-003',
+    identifier: 'DEMO-2026-0003',
     shortName: 'Name mismatch',
     scenarioType: 'Identity/name mismatch',
     judgePrompt:
       'A buyer sees similar but non-identical names across invoices and fixture records.',
     business: {
-      legalName: 'Dakshin Alloy Works Limited',
-      tradeName: 'Dakshin Alloy',
+      legalName: 'Parakh Demo Entity Dakshin Alloy Works Limited',
+      tradeName: 'Dakshin Alloy Demo',
       constitution: 'Public Limited Company',
       registrationState: 'Tamil Nadu',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'SYN Works Road, Foundry Extension, Coimbatore',
+      syntheticAddress: 'Demo Works Road, Foundry Extension, Coimbatore',
       nameVariants: [
-        'Dakshin Alloys Works Ltd',
-        'Dakshin Alloy Traders',
-        'Dakshin Alloy',
+        'Dakshin Alloy Works Ltd',
+        'Dakshin Alloy Traders Demo',
+        'Dakshin Alloy Demo',
       ],
       source: fixtureSource,
     },
@@ -234,10 +238,10 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
     publicRecords: [
       {
-        id: 'SYN-REG-MISMATCH-027',
+        id: 'DEMO-REG-0003-A',
         category: 'registry',
         date: '2026-07-20',
-        parties: ['Dakshin Alloy Works Limited', 'Dakshin Alloy Traders'],
+        parties: ['Dakshin Alloy Works Demo Limited', 'Dakshin Alloy Traders Demo'],
         signal: 'FLAG',
         summary:
           'Synthetic invoice alias resembles, but does not exactly match, the registry legal name.',
@@ -252,20 +256,21 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
   },
   {
+    synthetic: true,
     id: 'court',
-    identifier: 'SYN-GSTIN-COURT-004',
+    identifier: 'DEMO-2026-0004',
     shortName: 'Public-record signal',
     scenarioType: 'Public-record/court-signal example',
     judgePrompt:
       'A logistics vendor with a fictional supplier-dispute signal for review.',
     business: {
-      legalName: 'Setu Freight Corridors Private Limited',
-      tradeName: 'Setu Freight',
+      legalName: 'Parakh Demo Entity Setu Freight Corridors Private Limited',
+      tradeName: 'Setu Freight Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Gujarat',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Warehouse SYN-22, Inland Movement Park, Ahmedabad',
-      nameVariants: ['Setu Freight Corridors Pvt Ltd', 'Setu Freight'],
+      syntheticAddress: 'Demo Warehouse 22, Inland Movement Park, Ahmedabad',
+      nameVariants: ['Setu Freight Corridors Pvt Ltd', 'Setu Freight Demo'],
       source: fixtureSource,
     },
     filings: [
@@ -300,12 +305,12 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
     publicRecords: [
       {
-        id: 'SYN-CIV-2026-014',
+        id: 'DEMO-CIV-0004-A',
         category: 'supplier-dispute',
         date: '2026-06-18',
         parties: [
-          'Setu Freight Corridors Private Limited',
-          'Rudra Packaging Works',
+          'Parakh Demo Entity Setu Freight Corridors Private Limited',
+          'Rudra Packaging Demo Works',
         ],
         signal: 'FLAG',
         summary:
@@ -314,10 +319,10 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         confidence: 'Medium',
       },
       {
-        id: 'SYN-CIV-2025-032',
+        id: 'DEMO-CIV-0004-B',
         category: 'civil',
         date: '2025-11-04',
-        parties: ['Setu Freight', 'Harbor Link Warehousing'],
+        parties: ['Setu Freight Demo', 'Harbor Link Demo Warehousing'],
         signal: 'NOTE',
         summary:
           'Older synthetic record uses a trade-name alias. It may be relevant but would need human review.',
@@ -332,20 +337,21 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     ],
   },
   {
+    synthetic: true,
     id: 'partial',
-    identifier: 'SYN-GSTIN-PARTIAL-005',
+    identifier: 'DEMO-2026-0005',
     shortName: 'Partial data',
     scenarioType: 'Partial or insufficient data',
     judgePrompt:
       'A new or thin-file business where Parakh should avoid overclaiming.',
     business: {
-      legalName: 'Prism Rural Tools OPC Private Limited',
-      tradeName: 'Prism Rural Tools',
+      legalName: 'Parakh Demo Entity Prism Rural Tools OPC Private Limited',
+      tradeName: 'Prism Rural Tools Demo',
       constitution: 'One Person Company',
       registrationState: 'Karnataka',
       registrationStatus: 'Recently active in synthetic registry',
-      syntheticAddress: 'SYN Innovation Yard, Mysuru',
-      nameVariants: ['Prism Rural Tools OPC', 'Prism Tools'],
+      syntheticAddress: 'Demo Innovation Yard, Mysuru',
+      nameVariants: ['Prism Rural Tools OPC', 'Prism Tools Demo'],
       source: fixtureSource,
     },
     filings: [

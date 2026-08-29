@@ -2,19 +2,19 @@
 
 ## The One-Minute Journey
 
-1. Open the public demo. The first screen, **What we want to build**, explains the counterparty-checking problem and shows the synthetic-data disclosure.
-2. Select **Try the synthetic demo**. It moves to the working journey and focuses the synthetic firm GSTIN field.
-3. Choose a synthetic situation or type one of the listed synthetic IDs, then select **Run synthetic check**.
+1. Open the public demo. The first screen, **One Demo Reference. The whole synthetic record.**, includes the working search and synthetic-data disclosure.
+2. Enter DEMO-2026-0002 or select **Try demo references**.
+3. Choose a fictional situation or type one of the listed Demo References, then select **Generate synthetic report**.
 4. Read the dedicated report: it presents the available evidence, source/provenance, confidence, limits, and what could not be found.
-5. Select a different synthetic ID from the report to compare a different situation. Use Print or Download to take a synthetic-only copy.
+5. Select a different Demo Reference from the report to compare a different situation. Use Print or Download report to take a synthetic-only copy, or open /synthetic-data.
 
 ## Suggested Scenarios
 
-- `SYN-GSTIN-CLEAR-001`: mostly clear filing and identity example.
-- `SYN-GSTIN-DELAY-002`: repeated filing-delay pattern.
-- `SYN-GSTIN-MISMATCH-003`: identity/name-variant follow-up.
-- `SYN-GSTIN-COURT-004`: fictional public-record signal.
-- `SYN-GSTIN-PARTIAL-005`: insufficient-data restraint.
+- DEMO-2026-0001: routine available evidence.
+- DEMO-2026-0002: repeated filing-delay pattern.
+- DEMO-2026-0003: identity/name-variant follow-up.
+- DEMO-2026-0004: fictional public-record signal.
+- DEMO-2026-0005: insufficient-data restraint.
 
 ## What To Look For
 

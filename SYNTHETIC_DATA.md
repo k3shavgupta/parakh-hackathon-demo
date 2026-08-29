@@ -10,11 +10,11 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 
 ## Scenarios
 
-- `SYN-GSTIN-CLEAR-001`: clean or mostly clear business.
-- `SYN-GSTIN-DELAY-002`: delayed filing pattern.
-- `SYN-GSTIN-MISMATCH-003`: identity/name mismatch.
-- `SYN-GSTIN-COURT-004`: public-record/court-signal example.
-- `SYN-GSTIN-PARTIAL-005`: partial or insufficient data.
+- DEMO-2026-0001: routine available evidence; no returned court item is a clearance.
+- DEMO-2026-0002: filing records requiring review.
+- DEMO-2026-0003: identity/name variation requiring confirmation.
+- DEMO-2026-0004: attributable fictional public-record signal.
+- DEMO-2026-0005: incomplete evidence with restrained findings.
 
 ## What Is Fake
 
@@ -25,7 +25,7 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 
 ## Engine Rules
 
-- Accept only obvious synthetic GSTIN-style identifiers.
+- Accept only the five visible Demo References.
 - Reject real-looking GSTIN, PAN, and Aadhaar-like inputs.
 - Normalize business names, dates, filing periods, and public-record parties.
 - Produce observations with only `FLAG`, `CLEAR`, and `NOTE`.

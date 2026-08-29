@@ -69,7 +69,7 @@ export const SCENARIOS = RAW_SYNTHETIC_SCENARIOS.map((scenario) => ({
   judgePrompt: scenario.judgePrompt,
 }));
 
-const SYNTHETIC_IDENTIFIER = /^SYN-GSTIN-[A-Z]+-\d{3}$/;
+const SYNTHETIC_IDENTIFIER = /^DEMO-2026-000[1-5]$/;
 const GSTIN_LIKE = /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/;
 const PAN_LIKE = /^[A-Z]{5}\d{4}[A-Z]$/;
 const AADHAAR_LIKE = /^\d{4}\s?\d{4}\s?\d{4}$/;
@@ -117,8 +117,7 @@ function sentenceForStatus(status: string) {
 }
 
 function buildReportId(identifier: string) {
-  const suffix = identifier.split('-').slice(-2).join('-');
-  return `PRK-SYN-${suffix}`;
+  return `PRK-${identifier}`;
 }
 
 function buildObservations(scenario: (typeof RAW_SYNTHETIC_SCENARIOS)[number]) {

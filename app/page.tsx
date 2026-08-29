@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   BadgeCheck,
@@ -30,7 +31,7 @@ const journeySteps = [
     number: '01',
     icon: Search,
     title: 'Start with one identifier',
-    body: 'A business owner enters an obvious synthetic GSTIN-style ID from this demo.',
+    body: 'A business owner enters one of five visible Demo References from this prototype.',
   },
   {
     number: '02',
@@ -90,15 +91,19 @@ function EvidenceRow({
 }
 
 export default function Home() {
+  const router = useRouter();
   const [value, setValue] = useState(SCENARIOS[0].identifier);
   const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [pendingReference, setPendingReference] = useState<string | null>(null);
+  const generationTimer = useRef<number | null>(null);
 
   function focusDemo() {
     document
       .getElementById('demo')
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     window.setTimeout(
-      () => document.getElementById('synthetic-identifier')?.focus(),
+      () => document.getElementById('demo-reference')?.focus(),
       350,
     );
   }
@@ -116,26 +121,97 @@ export default function Home() {
       return;
     }
 
-    window.location.href = `/report/${encodeURIComponent(normalized)}`;
+    setGenerating(true);
+    setPendingReference(normalized);
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    generationTimer.current = window.setTimeout(
+      () => router.push(`/report/${encodeURIComponent(normalized)}`),
+      reducedMotion ? 0 : 550,
+    );
+  }
+
+  function continueToReport() {
+    if (!pendingReference) return;
+    if (generationTimer.current !== null) {
+      window.clearTimeout(generationTimer.current);
+    }
+    router.push(`/report/${encodeURIComponent(pendingReference)}`);
+  }
+
+  function cancelGeneration() {
+    if (generationTimer.current !== null) {
+      window.clearTimeout(generationTimer.current);
+    }
+    setGenerating(false);
+    setPendingReference(null);
   }
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--parakh-bg)] text-[var(--parakh-ink)]">
-      <nav className="px-3 py-3 sm:px-6 sm:py-5">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-full bg-white/82 px-3 py-2 shadow-[0_1px_3px_rgba(42,24,31,0.06)] backdrop-blur-xl">
+      {generating ? (
+        <div
+          aria-live="assertive"
+          className="fixed inset-0 z-50 grid place-items-center bg-[#201d1d]/40 px-5 backdrop-blur-sm"
+        >
+          <section className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-[0_24px_80px_rgba(32,29,29,0.2)]">
+            <p className="text-sm font-semibold text-[var(--parakh-plum)]">
+              Preparing synthetic report
+            </p>
+            <ol className="mt-5 space-y-3 text-sm leading-6 text-[#675a62]">
+              {[
+                'Load synthetic registration evidence',
+                'Interpret synthetic filing periods',
+                'Resolve synthetic public-record candidates',
+                'Assemble findings and limitations',
+                'Render report',
+              ].map((step, index) => (
+                <li key={step} className="flex items-center gap-3">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[var(--parakh-wash)] text-xs font-semibold text-[var(--parakh-plum)]">
+                    {index + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="mt-5 text-xs leading-5 text-[#8a7982]">
+              Reading local fictional fixtures only. No network request is made.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={continueToReport}
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--parakh-plum)] px-4 text-sm font-semibold text-white"
+              >
+                Continue to report
+              </button>
+              <button
+                type="button"
+                onClick={cancelGeneration}
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--parakh-wash)] px-4 text-sm font-semibold text-[var(--parakh-plum-dark)]"
+              >
+                Back to demo
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      <nav className="border-b border-[#eee7eb] bg-white/92 px-4 py-4 backdrop-blur-xl sm:px-7 sm:py-5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link
             href="/"
-            className="flex items-center gap-2 pl-1 text-sm font-semibold"
+            className="flex items-center gap-2 text-sm font-semibold"
           >
-            <span className="grid size-8 place-items-center rounded-full bg-[var(--parakh-plum)] text-white">
-              प
-            </span>
-            Parakh
+            <span className="border border-[var(--parakh-plum)] px-2 py-1 font-serif text-2xl font-normal text-[var(--parakh-plum)]">Parakh</span>
+            <span className="hidden text-xl text-[#75656e] sm:inline">परख</span>
           </Link>
-          <div className="hidden items-center gap-6 text-xs font-semibold text-[#71636b] md:flex">
-            <a href="#journey">The journey</a>
-            <a href="#demo">Try the demo</a>
-            <a href="#boundary">Safety boundary</a>
+          <div className="hidden items-center gap-7 text-sm font-medium text-[#554a50] lg:flex">
+            <a href="#journey">How it works</a>
+            <a href="#demo">Sample report</a>
+            <a href="#method">Methodology</a>
+            <a href="#boundary">FAQ</a>
+            <Link href="/synthetic-data">Evidence lab</Link>
           </div>
           <button
             type="button"
@@ -160,9 +236,9 @@ export default function Home() {
             id="build-heading"
             className="mx-auto mt-6 max-w-4xl text-[clamp(3.25rem,7.5vw,6.5rem)] font-medium leading-[1.02] tracking-[-0.03em]"
           >
-            What we want to{' '}
+            One Demo Reference. The{' '}
             <span className="font-serif text-[1.04em] font-normal italic text-[var(--parakh-plum)]">
-              build.
+              whole synthetic record.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-[#665960] sm:text-lg sm:leading-8">
@@ -182,7 +258,7 @@ export default function Home() {
               onClick={focusDemo}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--parakh-plum)] px-6 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]"
             >
-              Try the synthetic demo
+              Try demo references
               <ArrowRight className="size-4" />
             </button>
             <a
@@ -197,11 +273,39 @@ export default function Home() {
             {disclosure}
           </p>
 
+          <form
+            className="mx-auto mt-6 flex max-w-3xl flex-col gap-2 rounded-full bg-white p-2 shadow-[0_12px_40px_rgba(81,34,69,0.12)] sm:flex-row"
+            onSubmit={(event) => {
+              event.preventDefault();
+              runSearch(value);
+            }}
+          >
+            <label htmlFor="demo-reference" className="sr-only">Demo reference</label>
+            <input
+              id="demo-reference"
+              aria-label="Demo reference"
+              value={value}
+              onChange={(event) => {
+                setValue(event.target.value);
+                setError('');
+              }}
+              className="min-h-12 min-w-0 flex-1 rounded-full bg-transparent px-5 text-sm font-semibold text-[var(--parakh-ink)] outline-none ring-[var(--parakh-plum)] focus:ring-2"
+            />
+            <button
+              type="submit"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--parakh-plum)] px-6 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]"
+            >
+              Generate synthetic report
+              <ArrowRight className="size-4" />
+            </button>
+          </form>
+          <p aria-live="polite" className="mx-auto min-h-5 max-w-3xl px-2 pt-2 text-left text-xs font-medium text-[#9c4350]">{error}</p>
+
           <div className="mx-auto mt-12 max-w-3xl rounded-[28px] bg-white p-5 text-left shadow-[0_25px_70px_rgba(56,27,47,0.13)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee4e9] pb-4">
               <div>
                 <p className="text-[11px] font-semibold text-[#9a8992]">
-                  SYN-GSTIN-DELAY-002 · synthetic report preview
+                  DEMO-2026-0002 · synthetic report preview
                 </p>
                 <h2 className="mt-1 text-xl font-medium">
                   Evidence, not a verdict.
@@ -303,8 +407,8 @@ export default function Home() {
               </span>
             </h2>
             <p className="mt-5 max-w-xl leading-7 text-[#675a62]">
-              Choose one of five fake business situations, or type its listed
-              synthetic ID. Each opens a dedicated report page using local
+              Choose one of five fictional business situations, or type its
+              listed demo reference. Each opens a dedicated report page using local
               fixtures only.
             </p>
 
@@ -315,12 +419,12 @@ export default function Home() {
                 runSearch(value);
               }}
             >
-              <label htmlFor="synthetic-identifier" className="sr-only">
-                Synthetic firm GSTIN
+              <label htmlFor="scenario-reference" className="sr-only">
+                Reference picker
               </label>
               <input
-                id="synthetic-identifier"
-                aria-label="Synthetic firm GSTIN"
+                id="scenario-reference"
+                aria-label="Reference picker"
                 value={value}
                 onChange={(event) => {
                   setValue(event.target.value);
@@ -332,7 +436,7 @@ export default function Home() {
                 type="submit"
                 className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--parakh-plum)] px-6 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]"
               >
-                Run synthetic check
+                Run listed reference
                 <ArrowRight className="size-4" />
               </button>
               <p
@@ -343,7 +447,7 @@ export default function Home() {
               </p>
             </form>
             <p className="mt-4 text-xs leading-5 text-[#81717a]">
-              The demo accepts only listed synthetic IDs. Real-looking personal
+              The demo accepts only listed demo references. Real-looking personal
               or government identifiers are blocked.
             </p>
           </div>
@@ -392,6 +496,7 @@ export default function Home() {
       </section>
 
       <section
+        id="method"
         aria-labelledby="clarity-heading"
         className="mx-auto max-w-7xl px-5 py-18 sm:px-8 sm:py-24"
       >
@@ -455,6 +560,30 @@ export default function Home() {
               </ul>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-2 mt-5 rounded-[30px] bg-white px-5 py-16 sm:mx-4 sm:px-8 sm:py-24">
+        <div className="mx-auto flex max-w-4xl flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold text-[var(--parakh-plum)]">A separate production journey</p>
+            <h2 className="mt-3 text-[clamp(2.25rem,4vw,3.75rem)] font-medium leading-[1.06] tracking-[-0.02em]">
+              Want the live Parakh{' '}
+              <span className="font-serif italic text-[var(--parakh-plum)]">experience?</span>
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[#675a62]">
+              Production Parakh requires login and supports authorized real-GSTIN workflows. It is intentionally separate from this public synthetic demo.
+            </p>
+          </div>
+          <a
+            href="https://parakh.biz"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-5 text-sm font-semibold text-white"
+          >
+            Visit Parakh
+            <ArrowRight className="size-4" />
+          </a>
         </div>
       </section>
 
