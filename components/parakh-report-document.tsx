@@ -101,10 +101,6 @@ function SectionCard({
   );
 }
 
-function openScenario(identifier: string) {
-  window.location.href = `/report/${encodeURIComponent(identifier)}`;
-}
-
 export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
   const delayed = report.filingPattern.rows.filter(
     (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
@@ -131,8 +127,8 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
     report.observations[report.observations.length - 1];
 
   return (
-    <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
-      <nav className="sticky top-0 z-30 border-b border-[#efe7ec] bg-[#fbf8f5]/90 px-4 py-3 backdrop-blur-xl print:hidden sm:px-8">
+    <main className="min-h-screen bg-[var(--parakh-bg)] text-[var(--parakh-ink)]">
+      <nav className="sticky top-0 z-30 border-b border-[#efe7ec] bg-[var(--parakh-bg)]/90 px-4 py-3 backdrop-blur-xl print:hidden sm:px-8">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <Link
             href="/"
@@ -155,7 +151,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             <a
               href={downloadHref}
               download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
-              className="hidden h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#7a336f] sm:inline-flex"
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[var(--parakh-plum)] sm:px-4"
             >
               <Download className="size-4" />
               Download
@@ -400,10 +396,14 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
           >
             <div className="grid gap-2">
               {SCENARIOS.map((scenario) => (
-                <button
+                <a
                   key={scenario.identifier}
-                  type="button"
-                  onClick={() => openScenario(scenario.identifier)}
+                  href={`/report/${encodeURIComponent(scenario.identifier)}`}
+                  aria-current={
+                    scenario.identifier === report.searchedIdentifier
+                      ? 'page'
+                      : undefined
+                  }
                   className={cn(
                     'rounded-[18px] border p-3 text-left text-sm transition hover:bg-[#fbf8f5]',
                     scenario.identifier === report.searchedIdentifier
@@ -415,7 +415,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
                   <span className="mt-1 block text-[#7f7279]">
                     {scenario.shortName}
                   </span>
-                </button>
+                </a>
               ))}
             </div>
           </SectionCard>
