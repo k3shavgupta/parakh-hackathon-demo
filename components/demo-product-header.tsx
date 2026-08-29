@@ -1,5 +1,5 @@
+/* oxlint-disable no-html-link-for-pages -- Vercel's Vinext adapter requires hard navigation for reliable public routes. */
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 
 export function DemoProductHeader({
   actions,
@@ -11,15 +11,15 @@ export function DemoProductHeader({
   return (
     <nav className={`demo-production-nav${hideWhenPrinting ? ' print:hidden' : ''}`}>
       <div className="demo-production-nav__inner">
-        <Link href="/" aria-label="Parakh demo home" className="demo-production-logo">
+        <a href="/" aria-label="Parakh demo home" className="demo-production-logo">
           <img src="/assets/logo-horizontal.svg" alt="" width={130} height={32} />
-        </Link>
+        </a>
         <div className="demo-production-nav__links" aria-label="Demo navigation">
-          <Link href="/#journey">How it works</Link>
-          <Link href="/#demo">Sample report</Link>
-          <Link href="/#method">Methodology</Link>
-          <Link href="/#boundary">FAQ</Link>
-          <Link href="/synthetic-data">Evidence Lab</Link>
+          <a href="/#journey">How it works</a>
+          <a href="/#demo">Sample report</a>
+          <a href="/#method">Methodology</a>
+          <a href="/#boundary">FAQ</a>
+          <a href="/synthetic-data">Evidence Lab</a>
         </div>
         {actions ? <div className="demo-production-nav__tools">{actions}</div> : null}
       </div>

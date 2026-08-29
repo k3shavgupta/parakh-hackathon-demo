@@ -1,7 +1,7 @@
 'use client';
 
+/* oxlint-disable no-html-link-for-pages -- Vercel's Vinext adapter requires hard navigation for reliable public routes. */
 import { useState } from 'react';
-import Link from 'next/link';
 import { ArrowRight, Copy, Database, GitBranch } from 'lucide-react';
 
 import { DemoProductHeader } from '@/components/demo-product-header';
@@ -100,13 +100,13 @@ export default function SyntheticDataPage() {
                     <h2 className="mt-1 text-2xl font-medium">{scenario.shortName}</h2>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-[#675a62]">{scenario.judgePrompt}</p>
                   </div>
-                  <Link
+                  <a
                     href={`/report/${encodeURIComponent(scenario.identifier)}`}
                     className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--parakh-plum)] px-4 text-sm font-semibold text-white"
                   >
                     Generate {scenario.identifier} report
                     <ArrowRight className="size-4" />
-                  </Link>
+                  </a>
                 </div>
 
                 <div className="mt-6 grid gap-5 lg:grid-cols-2">

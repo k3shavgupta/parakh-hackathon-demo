@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+/* oxlint-disable no-html-link-for-pages -- Vercel's Vinext adapter requires hard navigation for reliable public routes. */
 import { DemoProductHeader } from '@/components/demo-product-header';
 import { ParakhReportDocument } from '@/components/parakh-report-document';
 import { buildSyntheticReport } from '@/lib/synthetic-engine';
@@ -30,12 +29,12 @@ export default async function SyntheticReportPage({
             Real GSTINs, PANs, Aadhaar numbers, OTPs, and
             production Parakh data are not used.
           </p>
-          <Link
+          <a
             href="/"
             className="mt-6 inline-flex h-11 items-center rounded-full bg-[#201b1e] px-5 text-sm font-semibold text-white"
           >
             Back to demo search
-          </Link>
+          </a>
         </section>
       </main>
     );

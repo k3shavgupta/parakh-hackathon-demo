@@ -1,7 +1,7 @@
 'use client';
 
+/* oxlint-disable no-html-link-for-pages -- Vercel's Vinext adapter requires hard navigation for reliable public routes. */
 import { useState, type ReactNode } from 'react';
-import Link from 'next/link';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -455,13 +455,13 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
         </section>
 
         <div className="mt-8 flex flex-wrap items-center gap-3 print:hidden">
-          <Link
+          <a
             href="/"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#201b1e]"
           >
             <ArrowLeft className="size-4" />
             Back to search
-          </Link>
+          </a>
           {pdfError ? (
             <p aria-live="polite" className="w-full text-sm text-[#a33f4a]">
               {pdfError}

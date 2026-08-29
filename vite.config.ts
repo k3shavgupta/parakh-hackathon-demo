@@ -1,5 +1,7 @@
 import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
+import { fileURLToPath } from 'node:url';
+import { nitro } from 'nitro/vite';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
@@ -11,6 +13,8 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
+const isVercelBuild = process.env.NITRO_PRESET === 'vercel' || process.env.VERCEL === '1';
+const fromProjectRoot = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 const localBindingConfig = {
   main: 'vinext/server/fetch-handler',
@@ -42,20 +46,33 @@ export default defineConfig(async () => {
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';
 
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
-  const { cloudflare } = await import('@cloudflare/vite-plugin');
+  const { cloudflare } = isVercelBuild
+    ? { cloudflare: null }
+    : await import('@cloudflare/vite-plugin');
 
   return {
     css: { postcss: { plugins: [tailwindcss()] } },
+    resolve: isVercelBuild
+      ? {
+          alias: {
+            tailwindcss: fromProjectRoot('./node_modules/tailwindcss/index.css'),
+            'tw-animate-css': fromProjectRoot('./node_modules/tw-animate-css/dist/tw-animate.css'),
+            'shadcn/tailwind.css': fromProjectRoot('./node_modules/shadcn/dist/tailwind.css'),
+          },
+        }
+      : undefined,
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
     plugins: [
       vinext(),
       sites(),
-      cloudflare({
-        viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
-        config: localBindingConfig,
-      }),
+      ...(cloudflare
+        ? [cloudflare({
+            viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
+            config: localBindingConfig,
+          })]
+        : [nitro()]),
     ],
   };
 });
