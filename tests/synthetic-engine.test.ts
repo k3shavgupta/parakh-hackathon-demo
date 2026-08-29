@@ -88,15 +88,31 @@ describe('synthetic v4 report engine', () => {
     expect(report.engine.identity.normalizedLegalName).toBe(
       'PARAKH DEMO ENTITY NAVKAAR METRO COMPONENTS PRIVATE LIMITED',
     );
+    expect(report.business.syntheticRegistrationDate).toBe('15 Jul 2021');
+    expect(report.business.syntheticBusinessActivity).toContain('industrial components');
   });
 
   it('attaches V4-style court resolution to the fictional court-signal scenario', () => {
     const report = buildSyntheticReport('DEMO-2026-0004');
 
-    expect(report.engine.court.reportable).toHaveLength(2);
+    expect(report.engine.court.reportable).toHaveLength(4);
     expect(
       report.engine.court.reportable.map((item) => item.matchGrade),
-    ).toEqual(['STRONG', 'STRONG']);
+    ).toEqual(['STRONG', 'STRONG', 'STRONG', 'POSSIBLE']);
+    expect(report.filingPattern.rows).toHaveLength(5);
+    expect(report.publicRecords[0]).toMatchObject({
+      caseReference: 'SYN-COMM-AHD-2026-041',
+      courtName: 'Synthetic Commercial Court, Ahmedabad',
+      filingYear: '2026',
+      partySide: 'respondent',
+      matchBasis: 'business legal name',
+      matchGrade: 'STRONG',
+    });
+    expect(report.publicRecords[3]).toMatchObject({
+      partySide: 'petitioner',
+      matchBasis: 'partial business-name token overlap',
+      matchGrade: 'POSSIBLE',
+    });
   });
 
   it('returns a partial-data report without inventing a verdict', () => {

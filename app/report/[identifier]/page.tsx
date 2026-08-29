@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { DemoProductHeader } from '@/components/demo-product-header';
 import { ParakhReportDocument } from '@/components/parakh-report-document';
 import { buildSyntheticReport } from '@/lib/synthetic-engine';
 
@@ -15,8 +16,9 @@ export default async function SyntheticReportPage({
     report = buildSyntheticReport(decodeURIComponent(identifier));
   } catch {
     return (
-      <main className="min-h-screen bg-[#fbf8f5] px-5 py-16 text-[#201b1e]">
-        <section className="mx-auto max-w-2xl rounded-[32px] bg-white p-8 text-center shadow-[0_20px_70px_rgba(42,24,31,0.08)]">
+      <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
+        <DemoProductHeader />
+        <section className="mx-auto mt-12 max-w-2xl rounded-[32px] bg-white p-8 text-center shadow-[0_20px_70px_rgba(42,24,31,0.08)] sm:mt-16">
           <p className="inline-flex rounded-full bg-[#fbf2f7] px-3 py-1 text-xs font-semibold text-[#7a336f]">
             Synthetic demo only
           </p>

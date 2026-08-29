@@ -17,6 +17,12 @@ export type RawPublicRecord = {
   summary: string;
   source: string;
   confidence: 'High' | 'Medium' | 'Low';
+  caseReference?: string;
+  courtName?: string;
+  filingYear?: string;
+  proceeding?: string;
+  matchBasis?: string;
+  recordStatus?: string;
 };
 
 export type SyntheticScenario = {
@@ -32,6 +38,8 @@ export type SyntheticScenario = {
     constitution: string;
     registrationState: string;
     registrationStatus: string;
+    syntheticRegistrationDate: string;
+    syntheticBusinessActivity: string;
     syntheticAddress: string;
     nameVariants: string[];
     source: string;
@@ -59,6 +67,8 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       constitution: 'Private Limited Company',
       registrationState: 'Uttar Pradesh',
       registrationStatus: 'Active in synthetic registry',
+      syntheticRegistrationDate: '2022-04-18',
+      syntheticBusinessActivity: 'Distribution of industrial electrical components (synthetic)',
       syntheticAddress: 'Demo Plot 14, Cooperative Industrial Area, Kanpur',
       nameVariants: ['Udaan Components LLP', 'Udaan Components Demo'],
       source: fixtureSource,
@@ -133,6 +143,8 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       constitution: 'Private Limited Company',
       registrationState: 'Maharashtra',
       registrationStatus: 'Active in synthetic registry',
+      syntheticRegistrationDate: '2021-07-15',
+      syntheticBusinessActivity: 'Wholesale distribution of industrial components (synthetic)',
       syntheticAddress: 'Demo Unit 8, Western Supply Cluster, Pune',
       nameVariants: [
         'Navkaar Metro Components Pvt Ltd',
@@ -198,6 +210,8 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       constitution: 'Public Limited Company',
       registrationState: 'Tamil Nadu',
       registrationStatus: 'Active in synthetic registry',
+      syntheticRegistrationDate: '2018-11-02',
+      syntheticBusinessActivity: 'Alloy casting and fabricated metal goods (synthetic)',
       syntheticAddress: 'Demo Works Road, Foundry Extension, Coimbatore',
       nameVariants: [
         'Dakshin Alloy Works Ltd',
@@ -235,6 +249,13 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         filedOn: '2026-07-11',
         source: fixtureSource,
       },
+      {
+        period: '2026-07',
+        gstr1: 'filed',
+        gstr3b: 'filed',
+        filedOn: '2026-08-11',
+        source: fixtureSource,
+      },
     ],
     publicRecords: [
       {
@@ -269,6 +290,8 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       constitution: 'Private Limited Company',
       registrationState: 'Gujarat',
       registrationStatus: 'Active in synthetic registry',
+      syntheticRegistrationDate: '2020-02-28',
+      syntheticBusinessActivity: 'Road freight and warehousing coordination (synthetic)',
       syntheticAddress: 'Demo Warehouse 22, Inland Movement Park, Ahmedabad',
       nameVariants: ['Setu Freight Corridors Pvt Ltd', 'Setu Freight Demo'],
       source: fixtureSource,
@@ -302,6 +325,13 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         filedOn: '2026-07-18',
         source: fixtureSource,
       },
+      {
+        period: '2026-07',
+        gstr1: 'filed',
+        gstr3b: 'filed',
+        filedOn: '2026-08-10',
+        source: fixtureSource,
+      },
     ],
     publicRecords: [
       {
@@ -309,14 +339,20 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         category: 'supplier-dispute',
         date: '2026-06-18',
         parties: [
-          'Parakh Demo Entity Setu Freight Corridors Private Limited',
           'Rudra Packaging Demo Works',
+          'Parakh Demo Entity Setu Freight Corridors Private Limited',
         ],
         signal: 'FLAG',
         summary:
-          'Fictional supplier-dispute record appears to involve the same synthetic legal name.',
+          'Synthetic supplier-dispute record carries the exact synthetic legal name and is shown for careful follow-up, not as an identity confirmation.',
         source: fixtureSource,
         confidence: 'Medium',
+        caseReference: 'SYN-COMM-AHD-2026-041',
+        courtName: 'Synthetic Commercial Court, Ahmedabad',
+        filingYear: '2026',
+        proceeding: 'Commercial supplier dispute',
+        matchBasis: 'business legal name',
+        recordStatus: 'Synthetic record returned for review',
       },
       {
         id: 'DEMO-CIV-0004-B',
@@ -325,9 +361,52 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         parties: ['Setu Freight Demo', 'Harbor Link Demo Warehousing'],
         signal: 'NOTE',
         summary:
-          'Older synthetic record uses a trade-name alias. It may be relevant but would need human review.',
+          'Older synthetic civil record uses the exact synthetic trade name. It may be relevant but would need human review before any conclusion.',
         source: fixtureSource,
         confidence: 'Low',
+        caseReference: 'SYN-CIV-SRT-2025-118',
+        courtName: 'Synthetic Civil Court, Surat',
+        filingYear: '2025',
+        proceeding: 'Civil contract proceeding',
+        matchBasis: 'business trade name',
+        recordStatus: 'Synthetic record returned for review',
+      },
+      {
+        id: 'DEMO-CIV-0004-C',
+        category: 'supplier-dispute',
+        date: '2024-09-22',
+        parties: [
+          'Narmada Depot Demo LLP',
+          'Setu Freight Corridors Pvt Ltd',
+        ],
+        signal: 'NOTE',
+        summary:
+          'An earlier synthetic commercial record uses a legal-form variant of the business name and is included with its source limits.',
+        source: fixtureSource,
+        confidence: 'Medium',
+        caseReference: 'SYN-COMM-VAD-2024-066',
+        courtName: 'Synthetic Commercial Court, Vadodara',
+        filingYear: '2024',
+        proceeding: 'Commercial recovery proceeding',
+        matchBasis: 'business legal-form variant',
+        recordStatus: 'Synthetic record returned for review',
+      },
+      {
+        id: 'DEMO-CIV-0004-D',
+        category: 'civil',
+        date: '2023-03-11',
+        parties: ['Setu Freight Route Demo', 'Coastal Yard Demo Services'],
+        signal: 'NOTE',
+        summary:
+          'A historical synthetic result shares only part of the core name. It is retained as a possible alias, with intentionally restrained attribution.',
+        source: fixtureSource,
+        confidence: 'Low',
+        caseReference: 'SYN-CIV-RJK-2023-207',
+        courtName: 'Synthetic Civil Court, Rajkot',
+        filingYear: '2023',
+        proceeding: 'Civil freight-services proceeding',
+        matchBasis: 'partial business-name token overlap',
+        recordStatus: 'Synthetic possible-alias result',
       },
     ],
     unavailable: [
@@ -350,6 +429,8 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       constitution: 'One Person Company',
       registrationState: 'Karnataka',
       registrationStatus: 'Recently active in synthetic registry',
+      syntheticRegistrationDate: '2025-12-03',
+      syntheticBusinessActivity: 'Rural hand tools and equipment assembly (synthetic)',
       syntheticAddress: 'Demo Innovation Yard, Mysuru',
       nameVariants: ['Prism Rural Tools OPC', 'Prism Tools Demo'],
       source: fixtureSource,

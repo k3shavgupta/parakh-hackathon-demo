@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Copy, Database, GitBranch } from 'lucide-react';
 
+import { DemoProductHeader } from '@/components/demo-product-header';
 import { RAW_SYNTHETIC_SCENARIOS } from '@/lib/synthetic-fixtures';
 import { buildSyntheticReport } from '@/lib/synthetic-engine';
 
@@ -43,21 +44,7 @@ function JsonPanel({ value }: { value: unknown }) {
 export default function SyntheticDataPage() {
   return (
     <main className="min-h-screen bg-[var(--parakh-bg)] text-[var(--parakh-ink)]">
-      <nav className="border-b border-[#eadfe6] bg-white/90 px-5 py-4 backdrop-blur-xl sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
-            <span className="grid size-8 place-items-center rounded-lg bg-[var(--parakh-plum)] text-white">प</span>
-            Parakh demo
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-4 text-sm font-semibold text-white"
-          >
-            Back to demo
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-      </nav>
+      <DemoProductHeader />
 
       <section className="mx-2 mt-2 rounded-[30px] bg-[radial-gradient(110%_100%_at_50%_0%,#fff_0%,#f0e3ec_100%)] px-5 py-16 sm:mx-4 sm:px-8 sm:py-24">
         <div className="mx-auto max-w-4xl text-center">

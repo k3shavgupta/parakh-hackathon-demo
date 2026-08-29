@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -22,6 +21,7 @@ import {
   isAllowedSyntheticIdentifier,
 } from '@/lib/synthetic-engine';
 import { cn } from '@/lib/utils';
+import { DemoProductHeader } from '@/components/demo-product-header';
 
 const disclosure =
   'This hackathon demo uses synthetic data only. It does not access live government systems, private records, real GSTINs, PANs, Aadhaar numbers, OTPs, payments, or production Parakh data.';
@@ -56,40 +56,6 @@ const workingToday = [
   'Browser print and synthetic text download',
 ];
 
-function EvidenceRow({
-  label,
-  text,
-  tone,
-}: {
-  label: string;
-  text: string;
-  tone: 'FLAG' | 'CLEAR' | 'NOTE';
-}) {
-  const toneClass =
-    tone === 'FLAG'
-      ? 'bg-[#fff2f3] text-[#9c4350]'
-      : tone === 'CLEAR'
-        ? 'bg-[#eff9f3] text-[#276b47]'
-        : 'bg-[#fff7ec] text-[#8b5a1d]';
-
-  return (
-    <div className="grid grid-cols-[76px_minmax(0,1fr)_auto] items-center gap-3 border-t border-[#eee4e9] py-3 text-sm first:border-t-0">
-      <span className="text-[11px] font-semibold text-[#907f89]">{label}</span>
-      <span className="font-medium leading-6 text-[var(--parakh-ink)]">
-        {text}
-      </span>
-      <span
-        className={cn(
-          'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-          toneClass,
-        )}
-      >
-        {tone}
-      </span>
-    </div>
-  );
-}
-
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState(SCENARIOS[0].identifier);
@@ -97,16 +63,6 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [pendingReference, setPendingReference] = useState<string | null>(null);
   const generationTimer = useRef<number | null>(null);
-
-  function focusDemo() {
-    document
-      .getElementById('demo')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(
-      () => document.getElementById('demo-reference')?.focus(),
-      350,
-    );
-  }
 
   function runSearch(identifier: string) {
     const normalized = identifier.trim().toUpperCase();
@@ -123,12 +79,9 @@ export default function Home() {
 
     setGenerating(true);
     setPendingReference(normalized);
-    const reducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
     generationTimer.current = window.setTimeout(
       () => router.push(`/report/${encodeURIComponent(normalized)}`),
-      reducedMotion ? 0 : 550,
+      1200,
     );
   }
 
@@ -197,84 +150,26 @@ export default function Home() {
           </section>
         </div>
       ) : null}
-      <nav className="border-b border-[#eee7eb] bg-white/92 px-4 py-4 backdrop-blur-xl sm:px-7 sm:py-5">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-semibold"
-          >
-            <span className="border border-[var(--parakh-plum)] px-2 py-1 font-serif text-2xl font-normal text-[var(--parakh-plum)]">Parakh</span>
-            <span className="hidden text-xl text-[#75656e] sm:inline">परख</span>
-          </Link>
-          <div className="hidden items-center gap-7 text-sm font-medium text-[#554a50] lg:flex">
-            <a href="#journey">How it works</a>
-            <a href="#demo">Sample report</a>
-            <a href="#method">Methodology</a>
-            <a href="#boundary">FAQ</a>
-            <Link href="/synthetic-data">Evidence lab</Link>
-          </div>
-          <button
-            type="button"
-            onClick={focusDemo}
-            className="min-h-10 rounded-full bg-[var(--parakh-ink)] px-4 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-          >
-            Try demo
-          </button>
-        </div>
-      </nav>
+      <DemoProductHeader />
 
       <section
         aria-labelledby="build-heading"
-        className="mx-2 rounded-[30px] bg-[radial-gradient(120%_85%_at_50%_0%,#ffffff_0%,#fbf0f6_53%,#ecd8e6_100%)] px-5 pb-14 pt-12 sm:mx-4 sm:px-8 sm:pb-20 sm:pt-20"
+        className="demo-production-hero"
       >
-        <div className="mx-auto max-w-5xl text-center">
-          <p className="mx-auto inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-3 text-xs font-semibold text-[var(--parakh-plum-dark)] shadow-[0_1px_2px_rgba(42,24,31,0.05)]">
-            <Sparkles className="size-3.5" />
+        <div className="demo-production-hero__inner">
+          <p className="demo-production-hackathon-badge">
+            <Sparkles aria-hidden="true" className="size-4" />
             Built for Build What Moves India
           </p>
-          <h1
-            id="build-heading"
-            className="mx-auto mt-6 max-w-4xl text-[clamp(3.25rem,7.5vw,6.5rem)] font-medium leading-[1.02] tracking-[-0.03em]"
-          >
-            One Demo Reference. The{' '}
-            <span className="font-serif text-[1.04em] font-normal italic text-[var(--parakh-plum)]">
-              whole synthetic record.
-            </span>
+          <p className="demo-production-eyebrow"><span>प</span> GST + court record check</p>
+          <h1 id="build-heading" className="demo-production-heading">
+            One GSTIN.<br />The <em>whole record</em>.
           </h1>
-          <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-[#665960] sm:text-lg sm:leading-8">
-            A clearer way for an Indian business owner to understand a
-            counterparty before giving credit, beginning with evidence that is
-            usually scattered, slow to read, and difficult to explain.
+          <p className="demo-production-subtitle">
+            Before you send goods on credit, check a counterparty reference. This public demo shows how GST and published court-record evidence can become readable, using fictional local fixtures only.
           </p>
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-6 text-[#7a6973] sm:text-base">
-            Parakh brings filing patterns and public-record signals into one
-            readable report, while saying plainly what the evidence cannot
-            establish.
-          </p>
-
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={focusDemo}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--parakh-plum)] px-6 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]"
-            >
-              Try demo references
-              <ArrowRight className="size-4" />
-            </button>
-            <a
-              href="#journey"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-[var(--parakh-plum-dark)] transition hover:bg-[#fdf8fb]"
-            >
-              See the journey
-            </a>
-          </div>
-
-          <p className="mx-auto mt-7 max-w-3xl rounded-[18px] bg-white/78 px-4 py-3 text-left text-xs leading-5 text-[#5f5259] shadow-[0_1px_2px_rgba(42,24,31,0.05)] sm:text-sm">
-            {disclosure}
-          </p>
-
           <form
-            className="mx-auto mt-6 flex max-w-3xl flex-col gap-2 rounded-full bg-white p-2 shadow-[0_12px_40px_rgba(81,34,69,0.12)] sm:flex-row"
+            className="demo-production-search"
             onSubmit={(event) => {
               event.preventDefault();
               runSearch(value);
@@ -289,52 +184,44 @@ export default function Home() {
                 setValue(event.target.value);
                 setError('');
               }}
-              className="min-h-12 min-w-0 flex-1 rounded-full bg-transparent px-5 text-sm font-semibold text-[var(--parakh-ink)] outline-none ring-[var(--parakh-plum)] focus:ring-2"
+              placeholder="ENTER DEMO REFERENCE (E.G. DEMO-2026-0001)"
+              className="demo-production-search__input"
             />
             <button
               type="submit"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--parakh-plum)] px-6 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]"
+              className="demo-production-search__button"
             >
-              Generate synthetic report
+              Run Parakh Check
               <ArrowRight className="size-4" />
             </button>
           </form>
-          <p aria-live="polite" className="mx-auto min-h-5 max-w-3xl px-2 pt-2 text-left text-xs font-medium text-[#9c4350]">{error}</p>
+          <p aria-live="polite" className="demo-production-error">{error}</p>
+          <p className="demo-production-micro">✦ Synthetic report only <i>•</i> Five fictional scenarios <i>•</i> Instant local result</p>
+          <p className="demo-production-hackathon">Built for Build What Moves India. {disclosure}</p>
 
-          <div className="mx-auto mt-12 max-w-3xl rounded-[28px] bg-white p-5 text-left shadow-[0_25px_70px_rgba(56,27,47,0.13)] sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee4e9] pb-4">
-              <div>
-                <p className="text-[11px] font-semibold text-[#9a8992]">
-                  DEMO-2026-0002 · synthetic report preview
-                </p>
-                <h2 className="mt-1 text-xl font-medium">
-                  Evidence, not a verdict.
-                </h2>
+          <div className="demo-production-visual" aria-label="Synthetic report preview">
+            <div className="demo-production-report">
+              <div className="demo-production-report__top">
+                <div className="demo-production-report__id">DEMO REFERENCE <b>DEMO-2026-0002</b> <span>· synthetic only</span></div>
+                <span className="demo-production-stamp">SPECIMEN</span>
               </div>
-              <span className="rounded-full bg-[#fff7ec] px-3 py-1 text-[11px] font-semibold text-[#8b5a1d]">
-                DEMO
-              </span>
+              <div className="demo-production-rows">
+                <div className="demo-production-row">
+                  <span>IDENTITY</span><strong>Fixture profile found and normalized</strong><b className="demo-chip demo-chip--clear">CLEAR</b>
+                </div>
+                <div className="demo-production-row demo-production-row--filing">
+                  <span>FILING</span><strong>Repeated filing delay pattern in fictional periods</strong><b className="demo-chip demo-chip--flag">FLAG</b>
+                  <div className="demo-production-strip"><div><i /><i /><i /><i /><i /><i /><i /><i /></div><p>2 of 5 on time <em>synthetic periods only</em></p></div>
+                </div>
+                <div className="demo-production-row">
+                  <span>RECORDS</span><strong>Fictional public-record example with attribution</strong><b className="demo-chip demo-chip--note">NOTE</b>
+                </div>
+                <div className="demo-production-row">
+                  <span>LIMITS</span><strong>No live records, private ledgers, or payment data</strong><b className="demo-chip demo-chip--note">NOTE</b>
+                </div>
+              </div>
+              <div className="demo-production-report__foot"><b>Could not find:</b> anything outside these local fictional fixtures.</div>
             </div>
-            <EvidenceRow
-              label="IDENTITY"
-              text="Fixture profile found and normalized"
-              tone="CLEAR"
-            />
-            <EvidenceRow
-              label="FILING"
-              text="Repeated filing delay pattern in synthetic periods"
-              tone="FLAG"
-            />
-            <EvidenceRow
-              label="RECORDS"
-              text="Source and attribution stay beside each observation"
-              tone="NOTE"
-            />
-            <EvidenceRow
-              label="LIMITS"
-              text="No live record, private ledger, or payment data"
-              tone="NOTE"
-            />
           </div>
         </div>
       </section>
@@ -563,30 +450,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-2 mt-5 rounded-[30px] bg-white px-5 py-16 sm:mx-4 sm:px-8 sm:py-24">
-        <div className="mx-auto flex max-w-4xl flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-[var(--parakh-plum)]">A separate production journey</p>
-            <h2 className="mt-3 text-[clamp(2.25rem,4vw,3.75rem)] font-medium leading-[1.06] tracking-[-0.02em]">
-              Want the live Parakh{' '}
-              <span className="font-serif italic text-[var(--parakh-plum)]">experience?</span>
-            </h2>
-            <p className="mt-4 text-base leading-7 text-[#675a62]">
-              Production Parakh requires login and supports authorized real-GSTIN workflows. It is intentionally separate from this public synthetic demo.
-            </p>
-          </div>
-          <a
-            href="https://parakh.biz"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-5 text-sm font-semibold text-white"
-          >
-            Visit Parakh
-            <ArrowRight className="size-4" />
-          </a>
-        </div>
-      </section>
-
       <section
         id="works"
         aria-labelledby="works-heading"
@@ -663,6 +526,30 @@ export default function Home() {
               limitations.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-2 mt-5 rounded-[30px] bg-white px-5 py-16 sm:mx-4 sm:px-8 sm:py-24">
+        <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold text-[var(--parakh-plum)]">Live production preview</p>
+            <h2 className="mt-3 text-[clamp(2.25rem,4vw,3.75rem)] font-medium leading-[1.06] tracking-[-0.02em]">
+              Continue to the live{' '}
+              <span className="font-serif italic text-[var(--parakh-plum)]">Parakh product.</span>
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[#675a62]">
+              This public build uses fictional fixtures only. Production Parakh is separate and requires sign-in for authorized real-data workflows.
+            </p>
+          </div>
+          <a
+            href="https://parakh.biz"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-5 text-sm font-semibold text-white"
+          >
+            Head to parakh.biz
+            <ArrowRight className="size-4" />
+          </a>
         </div>
       </section>
 

@@ -23,6 +23,36 @@ deterministic portions of the V4 engine:
 | `website/website/src/lib/engine/court-candidates.ts` | `0577f5aaad094bdfbe5c1b4d3caaafa524b93a7693a1078d2fd49146f5545bf6` | Candidate-evidence shape, reduced to local fixture records |
 | `website/website/src/lib/engine/court-resolution.ts` | `e444502f804e8d2f0012c2da1ae3ad11506d3cbca333d57dece828dde4819926` | Deterministic party matching and a reportable/non-match split |
 
+## Visual reference
+
+The homepage’s header, hero rhythm, search-pill composition, and specimen-card
+hierarchy were locally rebuilt from the production visual direction. The
+production wordmark and report font files were copied into this isolated demo
+with the product owner's direction, solely to keep the synthetic report visually
+consistent. No production page, application component, authentication flow, or
+live lookup behavior was copied into this demo.
+
+| Production reference | Local demo adaptation |
+| --- | --- |
+| `website/website/src/app/page.tsx` | Header/hero information hierarchy and report-preview composition |
+| `website/website/src/components/HeaderNav.tsx` | Public navigation layout only; no Clerk or account state |
+| `website/website/src/app/globals.css` | Locally scoped typography, spacing, and plum/wash treatment |
+| `website/website/public/assets/logo-horizontal.svg` | Local wordmark copy at `public/assets/logo-horizontal.svg` for fixture-only PDF presentation |
+| `website/website/public/assets/fonts/*` | Local copies of Onest, Instrument Serif, and Geist Mono assets for fixture-only PDF presentation |
+
+## PDF reference
+
+Production produces protected report PDFs on its server. That route and its
+Chromium runtime were not copied into this public demo. The standalone demo
+uses the same safe `pdf-lib` library version as the production package to
+produce a separate, fixture-only A4 PDF in the browser.
+
+| Production reference | Local demo adaptation |
+| --- | --- |
+| `website/website/src/app/api/reports/[id]/pdf/route.ts` | Report hierarchy reviewed only; no server route, Chromium runtime, storage, or authorization copied |
+| `website/website/src/components/ParakhReportDocument.tsx` | Report layout hierarchy, court-card treatment, and disclosure treatment locally re-created from synthetic data |
+| `website/website/package.json` | `pdf-lib@1.17.1` used by `lib/synthetic-pdf.ts` for a browser-generated synthetic PDF |
+
 ## Explicitly excluded
 
 The V4 orchestrator and every live integration were excluded:

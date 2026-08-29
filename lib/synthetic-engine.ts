@@ -37,6 +37,8 @@ export type SyntheticReport = {
     constitution: string;
     registrationState: string;
     registrationStatus: string;
+    syntheticRegistrationDate: string;
+    syntheticBusinessActivity: string;
     syntheticAddress: string;
     normalizedNames: string[];
     provenance: string;
@@ -54,6 +56,16 @@ export type SyntheticReport = {
     parties: string[];
     confidence: 'High' | 'Medium' | 'Low';
     provenance: string;
+    caseReference: string;
+    courtName: string;
+    filingYear: string;
+    proceeding: string;
+    matchBasis: string;
+    recordStatus: string;
+    partySide: 'petitioner' | 'respondent' | 'unknown';
+    matchGrade: 'STRONG' | 'POSSIBLE' | 'WEAK';
+    matchedParty: string;
+    resolutionReason: string;
   }[];
   engine: SyntheticV4Evidence;
   observations: Observation[];
@@ -290,6 +302,8 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       constitution: scenario.business.constitution,
       registrationState: scenario.business.registrationState,
       registrationStatus: scenario.business.registrationStatus,
+      syntheticRegistrationDate: formatDate(scenario.business.syntheticRegistrationDate),
+      syntheticBusinessActivity: scenario.business.syntheticBusinessActivity,
       syntheticAddress: scenario.business.syntheticAddress,
       normalizedNames: [
         scenario.business.legalName,
@@ -305,15 +319,34 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
           : 'The v4-style flow normalizes periods and return markers before converting them into observations.',
       confidence: rows.length < 3 ? 'Low' : 'High',
     },
-    publicRecords: scenario.publicRecords.map((record) => ({
-      id: record.id,
-      date: formatDate(record.date),
-      signal: record.signal,
-      summary: record.summary,
-      parties: record.parties.map(normalizeName),
-      confidence: record.confidence,
-      provenance: record.source,
-    })),
+    publicRecords: scenario.publicRecords.map((record) => {
+      const resolution = [
+        ...engine.court.reportable,
+        ...engine.court.rejected,
+      ].find((item) => item.fixtureId === record.id);
+
+      return {
+        id: record.id,
+        date: formatDate(record.date),
+        signal: record.signal,
+        summary: record.summary,
+        parties: record.parties.map(normalizeName),
+        confidence: record.confidence,
+        provenance: record.source,
+        caseReference: record.caseReference ?? record.id,
+        courtName: record.courtName ?? 'Synthetic record source',
+        filingYear: record.filingYear ?? new Date(record.date).getUTCFullYear().toString(),
+        proceeding: record.proceeding ?? 'Synthetic record reference',
+        matchBasis: record.matchBasis ?? 'synthetic party fields',
+        recordStatus: record.recordStatus ?? 'Synthetic record included for context',
+        partySide: resolution?.partySide ?? 'unknown',
+        matchGrade: resolution?.matchGrade ?? 'WEAK',
+        matchedParty: resolution?.matchedParty ?? 'No attributable synthetic party',
+        resolutionReason:
+          resolution?.reason ??
+          'No synthetic identity resolution was available for this record.',
+      };
+    }),
     engine,
     observations,
     cannotFind: scenario.unavailable,

@@ -20,8 +20,12 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 
 - Business names, trade names, addresses, identifiers, filing rows, record IDs,
   parties, dates, case-like references, source labels, and report IDs.
+- Synthetic registry dates and business-activity context, included to make each
+  fictional profile internally coherent without resembling a real registration.
+- Synthetic court names, case references, proceeding labels, party sides,
+  filing years, name-alignment bases, statuses, and match explanations.
 - Filing and public-record availability.
-- The generation animation and local evidence snapshot.
+- The generation animation, local evidence snapshot, and downloadable A4 PDF.
 
 ## Engine Rules
 
@@ -32,3 +36,8 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 - Show confidence, attribution, provenance, limitations, and missing evidence.
 - Never produce scores, traffic-light judgments, trust ratings, creditworthiness
   verdicts, or clearance decisions.
+- Generate the downloadable PDF from the selected local fixture only; no report
+  content is requested from a network, government system, or production API.
+- Present court records as name-based synthetic examples. A `STRONG` or
+  `POSSIBLE` name match is never identity confirmation, and neither is a
+  rating, score, recommendation, or verdict.

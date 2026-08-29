@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   AlertTriangle,
@@ -8,9 +8,9 @@ import {
   CheckCircle2,
   Download,
   FileText,
-  Printer,
 } from 'lucide-react';
 
+import { DemoProductHeader } from '@/components/demo-product-header';
 import type { SyntheticReport } from '@/lib/synthetic-engine';
 import { SCENARIOS } from '@/lib/synthetic-engine';
 import { cn } from '@/lib/utils';
@@ -22,32 +22,6 @@ function badgeClass(label: 'FLAG' | 'CLEAR' | 'NOTE') {
   if (label === 'FLAG') return 'border-[#e8b7bd] bg-[#fff3f4] text-[#a33f4a]';
   if (label === 'CLEAR') return 'border-[#c4dfd0] bg-[#eff9f3] text-[#2d6a48]';
   return 'border-[#eadbc8] bg-[#fff8ed] text-[#916022]';
-}
-
-function reportToText(report: SyntheticReport) {
-  return [
-    `Parakh synthetic report ${report.reportId}`,
-    `Demo reference: ${report.searchedIdentifier}`,
-    'SYNTHETIC DEMO - NOT A REAL REGISTRATION',
-    `Generated: ${report.generatedAt}`,
-    '',
-    disclosure,
-    '',
-    report.summary,
-    '',
-    `Entity: ${report.business.legalName}`,
-    `Trade name: ${report.business.tradeName}`,
-    `State: ${report.business.registrationState}`,
-    '',
-    'Observations:',
-    ...report.observations.map(
-      (item) =>
-        `- ${item.label}: ${item.title}. ${item.detail} Confidence: ${item.confidence}. Attribution: ${item.attribution}. Provenance: ${item.provenance}`,
-    ),
-    '',
-    'What we could not find:',
-    ...report.cannotFind.map((item) => `- ${item}`),
-  ].join('\n');
 }
 
 function PrimaryObservation({
@@ -103,6 +77,8 @@ function SectionCard({
 }
 
 export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState('');
   const delayed = report.filingPattern.rows.filter(
     (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
   ).length;
@@ -112,9 +88,6 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
   const noteCount = report.observations.filter(
     (observation) => observation.label === 'NOTE',
   ).length;
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(
-    reportToText(report),
-  )}`;
   const identityObservation =
     report.observations.find((item) => item.title.includes('Name')) ??
     report.observations[0];
@@ -127,40 +100,50 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
     report.observations.find((item) => item.title.includes('alias')) ??
     report.observations[report.observations.length - 1];
 
+  async function downloadPdf() {
+    setPdfError('');
+    setIsGeneratingPdf(true);
+
+    try {
+      const { buildSyntheticPdf, syntheticPdfFilename } = await import(
+        '@/lib/synthetic-pdf'
+      );
+      const pdfBytes = await buildSyntheticPdf(report);
+      const url = URL.createObjectURL(
+        new Blob([pdfBytes], { type: 'application/pdf' }),
+      );
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = syntheticPdfFilename(report);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    } catch {
+      setPdfError('The synthetic PDF could not be generated. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[var(--parakh-bg)] text-[var(--parakh-ink)]">
-      <nav className="sticky top-0 z-30 border-b border-[#efe7ec] bg-[var(--parakh-bg)]/90 px-4 py-3 backdrop-blur-xl print:hidden sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-semibold"
-          >
-            <span className="grid size-8 place-items-center rounded-full bg-[#7a336f] text-white">
-              प
-            </span>
-            Parakh demo
-          </Link>
+      <DemoProductHeader
+        hideWhenPrinting
+        actions={
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => window.print()}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#201b1e] px-4 text-sm font-semibold text-white"
-            >
-              <Printer className="size-4" />
-              Print
-            </button>
-            <a
-              href={downloadHref}
-              download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
-              aria-label="Download compact text report"
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[var(--parakh-plum)] sm:px-4"
+              onClick={downloadPdf}
+              disabled={isGeneratingPdf}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--parakh-plum)] px-4 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-70"
             >
               <Download className="size-4" />
-              Download report
-            </a>
+              {isGeneratingPdf ? 'Preparing PDF...' : 'Download PDF report'}
+            </button>
           </div>
-        </div>
-      </nav>
+        }
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">
         <div className="rounded-[32px] bg-[radial-gradient(circle_at_top,#fff_0%,#fbf2f7_42%,#f0e1ea_100%)] p-5 shadow-[0_30px_90px_rgba(42,24,31,0.08)] sm:p-8">
@@ -257,7 +240,10 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
                 ['Legal name', report.business.legalName],
                 ['Trade name', report.business.tradeName],
                 ['Constitution', report.business.constitution],
+                ['State', report.business.registrationState],
                 ['Status', report.business.registrationStatus],
+                ['Synthetic registry since', report.business.syntheticRegistrationDate],
+                ['Activity', report.business.syntheticBusinessActivity],
                 ['Address', report.business.syntheticAddress],
                 ['Source', report.business.provenance],
               ].map(([label, value]) => (
@@ -337,9 +323,29 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
                     <p className="mt-3 text-sm leading-6 text-[#675b63]">
                       {record.summary}
                     </p>
+                    <dl className="mt-3 grid gap-x-4 gap-y-2 border-t border-[#eee4ea] pt-3 text-xs leading-5 text-[#675b63] sm:grid-cols-2">
+                      <div>
+                        <dt className="font-semibold text-[#8b7c84]">Synthetic court</dt>
+                        <dd>{record.courtName}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-[#8b7c84]">Reference</dt>
+                        <dd className="font-mono text-[11px]">{record.caseReference}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-[#8b7c84]">Name alignment</dt>
+                        <dd>{record.matchGrade} · {record.matchBasis}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-[#8b7c84]">Matched party</dt>
+                        <dd>{record.matchedParty}</dd>
+                      </div>
+                    </dl>
                     <p className="mt-2 text-xs text-[#8b7c84]">
-                      {record.date} · Confidence {record.confidence} ·{' '}
-                      {record.provenance}
+                      {record.date} · Filed {record.filingYear} · {record.partySide} · Confidence {record.confidence}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#8b7c84]">
+                      {record.resolutionReason} Source: {record.provenance}
                     </p>
                   </div>
                 ))
@@ -448,7 +454,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
           </p>
         </section>
 
-        <div className="mt-8 flex flex-wrap gap-3 print:hidden">
+        <div className="mt-8 flex flex-wrap items-center gap-3 print:hidden">
           <Link
             href="/"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#201b1e]"
@@ -456,22 +462,11 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             <ArrowLeft className="size-4" />
             Back to search
           </Link>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#201b1e] px-5 text-sm font-semibold text-white"
-          >
-            <Printer className="size-4" />
-            Print report
-          </button>
-          <a
-            href={downloadHref}
-            download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7a336f] px-5 text-sm font-semibold text-white"
-          >
-            <Download className="size-4" />
-            Download report
-          </a>
+          {pdfError ? (
+            <p aria-live="polite" className="w-full text-sm text-[#a33f4a]">
+              {pdfError}
+            </p>
+          ) : null}
         </div>
       </section>
       <footer className="border-t border-[#efe4e9] px-5 py-6 text-center text-xs leading-5 text-[#776973]">
