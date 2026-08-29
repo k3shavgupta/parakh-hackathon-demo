@@ -15,10 +15,8 @@ test('shows the synthetic boundary and routes a listed scenario to its report', 
   ).toBeVisible();
   await expect(page.getByText('GST + court record check')).toBeVisible();
   await expect(
-    page.locator('.demo-production-hackathon-badge', {
-      hasText: 'Built for Build What Moves India',
-    }),
-  ).toBeVisible();
+    page.getByRole('link', { name: 'Built for Build What Moves India' }),
+  ).toHaveAttribute('href', 'https://buildwhatmovesindia.com/');
   await expect(page.locator('.demo-production-nav__actions')).toHaveCount(0);
   await expect(
     page.getByRole('link', { name: 'Head to parakh.biz' }),

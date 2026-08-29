@@ -157,10 +157,10 @@ export default function Home() {
         className="demo-production-hero"
       >
         <div className="demo-production-hero__inner">
-          <p className="demo-production-hackathon-badge">
+          <a className="demo-production-hackathon-badge" href="https://buildwhatmovesindia.com/">
             <Sparkles aria-hidden="true" className="size-4" />
             Built for Build What Moves India
-          </p>
+          </a>
           <p className="demo-production-eyebrow"><span>प</span> GST + court record check</p>
           <h1 id="build-heading" className="demo-production-heading">
             One GSTIN.<br />The <em>whole record</em>.

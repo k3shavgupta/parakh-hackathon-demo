@@ -181,7 +181,11 @@ body {
   color: var(--parakh-plum);
   font-size: 0.9rem;
   font-weight: 650;
+  text-decoration: none;
 }
+
+.demo-production-hackathon-badge:hover { color: #4b1e40; box-shadow: 0 6px 20px rgba(91, 45, 75, 0.1); }
+.demo-production-hackathon-badge:focus-visible { outline: 3px solid #d5a9ce; outline-offset: 4px; }
 
 .demo-production-eyebrow {
   display: inline-flex;
