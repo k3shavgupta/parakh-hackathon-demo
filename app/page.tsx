@@ -53,7 +53,7 @@ const workingToday = [
   'Synthetic public-record examples',
   'Explainable FLAG, CLEAR, and NOTE observations',
   'Dedicated report URLs and scenario switching',
-  'Browser print and synthetic text download',
+  'Fixture-only A4 PDF download',
 ];
 
 export default function Home() {
@@ -472,7 +472,7 @@ export default function Home() {
             </h2>
             <p className="mt-5 leading-7 text-white/68">
               Judges can go from one synthetic identifier to a readable report,
-              compare situations, and take a print or text copy without a login
+              compare situations, and download a fixture-only A4 PDF without a login
               or a live source connection.
             </p>
           </div>
