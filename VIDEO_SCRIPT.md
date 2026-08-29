@@ -1,81 +1,80 @@
-# Two-Minute Demo Script
+# Parakh: Two-Minute Demo Video
 
-Use a single browser window at `https://build.parakh.biz`. Keep the cursor and
-zoom calm, and show the real interaction rather than a slide deck.
+Record one continuous screen capture at `https://build.parakh.biz`. Use the
+desktop site at a readable zoom, turn on captions, and leave enough pause for
+the viewer to see each interaction. The narration below is about 220 words,
+leaving room inside the two-minute limit for clicks and scrolling.
 
-## 0:00-1:00: Citizen Journey
+## 0:00-1:00: The Citizen Journey
 
-**0:00-0:12 - Problem**
+### 0:00-0:12: The problem
 
-> Before a small business sends goods on credit, checking a counterparty can
-> mean piecing together filings, name variants, and public-record clues from
-> different places. It is slow, difficult to explain, and easy to overstate.
+**Show:** Homepage heading and the synthetic-data disclosure.
 
-Show the homepage heading, the visible hackathon badge, and the synthetic-data
-disclosure.
+> Before sending goods on credit, an owner may have to piece together GST
+> filings, name variants, and public-record clues. The work is scattered and
+> hard to explain.
 
-**0:12-0:28 - Start the check**
+### 0:12-0:28: Start with one reference
 
-> This is Parakh, an evidence-first counterparty-checking prototype. Everything
-> in this demo is synthetic. I will use `DEMO-2026-0004`, the fictional
-> public-record example.
+**Show:** Enter `DEMO-2026-0004`, then select **Run Parakh Check**.
 
-Enter `DEMO-2026-0004`, select **Run Parakh Check**, and show the local-fixture
-generation steps.
+> Parakh turns that one question into an evidence-first journey. This public
+> demo uses fictional identifiers and sources. I am checking the public-record
+> scenario with this visible Demo Reference.
 
-**0:28-0:50 - Read the report**
+### 0:28-0:44: Make the work visible
 
-> The report does not produce a score, rating, or verdict. It turns the local
-> fixtures into clear FLAG, CLEAR, and NOTE observations. Each one carries
-> confidence, attribution, provenance, and limits.
+**Show:** The report-generation steps, then the report summary.
 
-Pause on the report summary. Scroll to the filing pattern and public-record
-signals. Point out that name similarity is not identity confirmation.
+> The generation view makes the work visible: it loads local registration,
+> filing, and public-record fixtures, normalizes them, then prepares the
+> report. No live lookup and no hidden decision.
 
-**0:50-1:00 - Limits and output**
+### 0:44-1:00: Read evidence, not a verdict
 
-> It also says what it could not find. The PDF download produces a fixture-only
-> A4 report in the browser, and I can switch instantly between other fictional
-> situations.
+**Show:** Summary labels, filing pattern, public-record section, and `What we
+could not find`.
 
-Show **What we could not find**, click **Download PDF report**, then briefly
-show the scenario switcher.
+> The report uses only FLAG, CLEAR, and NOTE. It shows confidence, attribution,
+> provenance, limitations, and what we could not find. A name match is never
+> identity confirmation or a credit recommendation.
 
-## 1:00-2:00: Build and Safety
+## 1:00-2:00: Build, Safety, and Scale
 
-**1:00-1:20 - How it works**
+### 1:00-1:15: A useful output
 
-> Codex was used to build this complete journey: a production-shaped V4-style
-> adapter normalizes fictional business, filing, and public-record fixtures,
-> then renders the report schema and downloadable PDF locally.
+**Show:** **Download PDF report**, then the scenario switcher.
 
-Open **Evidence Lab**. Show the local fixture-to-adapter-to-engine-to-renderer
-trail, then return to the report if needed.
+> The owner can download a fixture-only A4 report or compare delayed-filing,
+> name-mismatch, clear, and insufficient-data situations without logging in.
 
-**1:20-1:40 - Why this is safer**
+### 1:15-1:32: How Codex shaped it
 
-> The prototype deliberately accepts only obvious Demo References. It never
-> calls government systems or private records, and it does not use real GSTINs,
-> PANs, Aadhaar numbers, payments, OTPs, accounts, or production Parakh data.
+**Show:** Open **Evidence Lab**.
 
-Show the repeated disclosure and the production-boundary explanation.
+> Codex helped us build the V4-style fixture adapter, explainable report flow,
+> responsive interface, local PDF export, and test coverage. The Evidence Lab
+> makes the path from fixture to report visible.
 
-**1:40-1:56 - What production requires**
+### 1:32-1:50: Why the boundary matters
 
-> A real deployment would need authorized APIs, consent-aware handling, audit
-> logs, rate limits, provenance, retention limits, security controls, and
-> human-readable limitations. Those boundaries are part of the design, not an
-> afterthought.
+**Show:** The synthetic disclosure and production-boundary content.
 
-**1:56-2:00 - Close**
+> This prototype never accesses live government systems, private records, real
+> identifiers, payments, OTPs, or production Parakh data. It accepts only
+> obvious Demo References.
 
-> Parakh makes one difficult counterparty check clearer, more explainable, and
-> easier for an Indian business owner to complete on mobile.
+### 1:50-2:00: Close
 
-## Recording Check
+> Production would require authorized APIs, consent-aware handling, audit logs,
+> rate limits, provenance, retention limits, and human-readable limitations.
+> Parakh makes one difficult check clearer, safer, and easier to complete.
 
-- Record a single video under two minutes.
-- Keep the synthetic-data disclosure visible or spoken before discussing any
-  report finding.
-- Do not present the prototype as an official government service.
-- Upload the final video somewhere that does not require reviewer access.
+## Recording Checklist
+
+- Keep the browser chrome and cursor unobtrusive.
+- Show the interaction live; do not replace the journey with slides.
+- Keep the synthetic disclosure visible before discussing any finding.
+- Do not call Parakh an official government service or imply government approval.
+- Confirm the exported PDF opens before uploading the final video.

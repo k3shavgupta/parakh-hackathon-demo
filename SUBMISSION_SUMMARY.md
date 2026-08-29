@@ -1,5 +1,25 @@
-Parakh is an evidence-first counterparty-checking experience for Indian businesses. Before extending credit or beginning a business relationship, a small business owner may have to reconcile fragmented filing patterns, name variations, public-record clues, screenshots, and portal results. The process is slow, difficult to explain, and easy to overstate.
+Parakh is an evidence-first counterparty-checking experience for Indian small
+businesses. Before sending goods on credit or starting a business relationship,
+an owner may need to compare GST filing patterns, name variants, public-record
+clues, screenshots, and portal results. Today, that work is fragmented, slow to
+read, and easy to overstate.
 
-This Build What Moves India prototype shows a clearer citizen journey. A judge can choose or enter one of five obvious Demo References, watch a transparent local-fixture generation sequence, and open a dedicated Parakh-style report. The report normalizes local synthetic business, filing, and public-record fixtures into explainable FLAG, CLEAR, and NOTE observations with confidence, attribution, provenance, limitations, and “What we could not find.” It supports scenario switching, fixture-only A4 PDF download, and an Evidence Lab without login.
+This public, no-login prototype makes one check easier to complete. A reviewer
+enters one visible Demo Reference, watches the local-fixture report flow, and
+receives a readable Parakh-style report. It turns fictional registration,
+filing, and public-record fixtures into explainable FLAG, CLEAR, and NOTE
+observations. Each observation shows confidence, attribution, provenance,
+limitations, and “What we could not find.” The user can compare five realistic
+fictional situations, inspect the evidence path, or download a fixture-only A4
+PDF.
 
-Everything presented as evidence is mocked: business facts, filing rows, public-record examples, report IDs, and generation output. The demo does not access live government systems, private records, real identifiers, payments, OTPs, or production Parakh data. A production version would need authorized APIs, consent-aware handling, audit logs, rate limits, provenance, retention limits, security controls, and clear human-readable limitations. Production Parakh remains separate and unchanged.
+The difference is not a score or a trust verdict. Parakh makes the available
+evidence and its gaps understandable before a business owner acts. It is built
+for mobile use and lower digital confidence: one clear reference, one visible
+journey, and plain-language limits.
+
+Everything in this build is synthetic. It never accesses live government
+systems, private records, real identifiers, payments, OTPs, or production
+Parakh data. A real deployment would require authorized APIs, consent-aware
+handling, audit logs, rate limits, data provenance, retention limits, security
+controls, and clear human-readable limitations.
