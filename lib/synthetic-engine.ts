@@ -2,6 +2,10 @@ import {
   RAW_SYNTHETIC_SCENARIOS,
   type SyntheticLabel,
 } from './synthetic-fixtures';
+import {
+  buildSyntheticV4Evidence,
+  type SyntheticV4Evidence,
+} from './v4-synthetic-adapter';
 
 export type Observation = {
   label: SyntheticLabel;
@@ -51,6 +55,7 @@ export type SyntheticReport = {
     confidence: 'High' | 'Medium' | 'Low';
     provenance: string;
   }[];
+  engine: SyntheticV4Evidence;
   observations: Observation[];
   cannotFind: string[];
   generationSteps: string[];
@@ -252,6 +257,15 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
   }
 
   const observations = buildObservations(scenario);
+  const engine = buildSyntheticV4Evidence(
+    normalizedIdentifier,
+    {
+      legalName: scenario.business.legalName,
+      tradeName: scenario.business.tradeName,
+      nameVariants: scenario.business.nameVariants,
+    },
+    scenario.publicRecords,
+  );
   const rows = scenario.filings.map((filing) => ({
     period: filing.period,
     month: formatPeriod(filing.period),
@@ -301,12 +315,13 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       confidence: record.confidence,
       provenance: record.source,
     })),
+    engine,
     observations,
     cannotFind: scenario.unavailable,
     generationSteps: [
       'Accept only an obvious synthetic identifier',
       'Load local synthetic profile, filing, and public-record fixtures',
-      'Normalize names, dates, filing periods, and record parties',
+      'Run fixture-only V4-style normalization and court-candidate resolution',
       'Create observations with FLAG, CLEAR, and NOTE labels only',
       'Attach confidence, attribution, provenance, limits, and synthetic disclosure',
     ],
