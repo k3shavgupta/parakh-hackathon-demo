@@ -12,8 +12,7 @@ export function DemoProductHeader({
     <nav className={`demo-production-nav${hideWhenPrinting ? ' print:hidden' : ''}`}>
       <div className="demo-production-nav__inner">
         <Link href="/" aria-label="Parakh demo home" className="demo-production-logo">
-          <span>Parakh</span>
-          <b>परख</b>
+          <img src="/assets/logo-horizontal.svg" alt="" width={130} height={32} />
         </Link>
         <div className="demo-production-nav__links" aria-label="Demo navigation">
           <Link href="/#journey">How it works</Link>

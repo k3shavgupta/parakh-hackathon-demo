@@ -85,6 +85,9 @@ test('marks the active report scenario and keeps export controls available', asy
   await expect(
     page.getByRole('link', { name: 'Parakh demo home' }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Parakh demo home' }).locator('img'),
+  ).toHaveAttribute('src', '/assets/logo-horizontal.svg');
 
   await expect(
     page.getByRole('button', { name: 'Print', exact: true }),
