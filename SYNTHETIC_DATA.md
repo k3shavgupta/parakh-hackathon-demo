@@ -28,7 +28,19 @@ The local fixture data lives in `lib/synthetic-fixtures.ts`.
 - Accept only obvious synthetic GSTIN-style identifiers.
 - Reject real-looking GSTIN, PAN, and Aadhaar-like inputs.
 - Normalize business names, dates, filing periods, and public-record parties.
+- Use obviously fictional `SYNTHETIC-*` case/record references and court labels.
+- Send only server-resolved synthetic entity and record metadata to the runtime
+  AI attribution step.
 - Produce observations with only `FLAG`, `CLEAR`, and `NOTE`.
 - Show confidence, attribution, provenance, limitations, and missing evidence.
+- If AI is unavailable, show the existing fixture-based grade explicitly.
 - Never produce scores, traffic-light judgments, trust ratings, creditworthiness
   verdicts, or clearance decisions.
+
+## Runtime AI boundary
+
+The browser submits only a known synthetic identifier and record ID to
+`/api/ai-attribution`. The server resolves both values against the local
+fixtures, applies a basic 10-calls-per-IP-per-hour limit, and calls OpenAI only
+when `OPENAI_API_KEY` is configured locally. The API key never enters the
+browser bundle.

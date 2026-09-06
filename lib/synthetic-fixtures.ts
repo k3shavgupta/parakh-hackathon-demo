@@ -11,8 +11,12 @@ export type RawFiling = {
 export type RawPublicRecord = {
   id: string;
   category: 'civil' | 'tax' | 'supplier-dispute' | 'registry';
+  caseReference: string;
+  courtName: string;
   date: string;
   parties: string[];
+  partySide: 'named-party' | 'alias-party' | 'not-applicable';
+  matchBasis: string;
   signal: SyntheticLabel;
   summary: string;
   source: string;
@@ -32,6 +36,7 @@ export type SyntheticScenario = {
     registrationState: string;
     registrationStatus: string;
     syntheticAddress: string;
+    syntheticPanPattern: string;
     nameVariants: string[];
     source: string;
   };
@@ -58,6 +63,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       registrationState: 'Uttar Pradesh',
       registrationStatus: 'Active in synthetic registry',
       syntheticAddress: 'Plot SYN-14, Cooperative Industrial Area, Kanpur',
+      syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-ALPHA',
       nameVariants: ['Aarav Precision Supplies Pvt Ltd', 'Aarav Precision'],
       source: fixtureSource,
     },
@@ -102,8 +108,12 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       {
         id: 'SYN-REG-CLEAR-011',
         category: 'registry',
+        caseReference: 'SYNTHETIC-RECORD-DEMO-011',
+        courtName: 'Synthetic Registry Ledger — Example Only',
         date: '2026-08-10',
         parties: ['Aarav Precision Supplies Private Limited'],
+        partySide: 'named-party',
+        matchBasis: 'Exact synthetic legal-name match',
         signal: 'CLEAR',
         summary:
           'Synthetic registry name and trade-name aliases align with the searched identifier.',
@@ -131,6 +141,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       registrationState: 'Maharashtra',
       registrationStatus: 'Active in synthetic registry',
       syntheticAddress: 'Unit SYN-8, Western Supply Cluster, Pune',
+      syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-BRAVO',
       nameVariants: [
         'Navkar Metro Components Pvt Ltd',
         'Navkaar Metro Components',
@@ -195,6 +206,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       registrationState: 'Tamil Nadu',
       registrationStatus: 'Active in synthetic registry',
       syntheticAddress: 'SYN Works Road, Foundry Extension, Coimbatore',
+      syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-CHARLIE',
       nameVariants: [
         'Dakshin Alloys Works Ltd',
         'Dakshin Alloy Traders',
@@ -236,8 +248,12 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       {
         id: 'SYN-REG-MISMATCH-027',
         category: 'registry',
+        caseReference: 'SYNTHETIC-RECORD-DEMO-027',
+        courtName: 'Synthetic Registry Ledger — Example Only',
         date: '2026-07-20',
         parties: ['Dakshin Alloy Works Limited', 'Dakshin Alloy Traders'],
+        partySide: 'alias-party',
+        matchBasis: 'Similar synthetic alias; legal name is not exact',
         signal: 'FLAG',
         summary:
           'Synthetic invoice alias resembles, but does not exactly match, the registry legal name.',
@@ -265,6 +281,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       registrationState: 'Gujarat',
       registrationStatus: 'Active in synthetic registry',
       syntheticAddress: 'Warehouse SYN-22, Inland Movement Park, Ahmedabad',
+      syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-DELTA',
       nameVariants: ['Setu Freight Corridors Pvt Ltd', 'Setu Freight'],
       source: fixtureSource,
     },
@@ -302,11 +319,15 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       {
         id: 'SYN-CIV-2026-014',
         category: 'supplier-dispute',
+        caseReference: 'SYNTHETIC-CASE-DEMO-014',
+        courtName: 'Synthetic Demo Court — Example Bench',
         date: '2026-06-18',
         parties: [
           'Setu Freight Corridors Private Limited',
           'Rudra Packaging Works',
         ],
+        partySide: 'named-party',
+        matchBasis: 'Exact synthetic legal-name match',
         signal: 'FLAG',
         summary:
           'Fictional supplier-dispute record appears to involve the same synthetic legal name.',
@@ -316,8 +337,12 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       {
         id: 'SYN-CIV-2025-032',
         category: 'civil',
+        caseReference: 'SYNTHETIC-CASE-DEMO-032',
+        courtName: 'Synthetic Demo Court — Example Bench',
         date: '2025-11-04',
         parties: ['Setu Freight', 'Harbor Link Warehousing'],
+        partySide: 'alias-party',
+        matchBasis: 'Synthetic trade-name alias; human review required',
         signal: 'NOTE',
         summary:
           'Older synthetic record uses a trade-name alias. It may be relevant but would need human review.',
@@ -345,6 +370,7 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       registrationState: 'Karnataka',
       registrationStatus: 'Recently active in synthetic registry',
       syntheticAddress: 'SYN Innovation Yard, Mysuru',
+      syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-ECHO',
       nameVariants: ['Prism Rural Tools OPC', 'Prism Tools'],
       source: fixtureSource,
     },

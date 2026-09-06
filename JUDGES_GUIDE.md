@@ -6,9 +6,16 @@
 2. Confirm the synthetic-data disclosure is visible on the first screen.
 3. Click any scenario card or type a listed synthetic GSTIN-style identifier.
 4. The demo opens a dedicated report page.
-5. Read the generated Parakh-style report.
-6. Switch to another scenario and compare the observations.
-7. Try print or download text.
+5. Watch the visible AI Attribution Reasoning loading state.
+6. Read the generated model justification, confidence, and decision—or the
+   explicit fixture-grade fallback if no local API key is configured.
+7. Switch to another scenario and compare the observations.
+8. Try print or Download PDF.
+
+For a local live-model demo, put `OPENAI_API_KEY` in `.env.local`. The key stays
+server-side and the request is limited to the synthetic fixture metadata.
+
+The transparent pipeline is documented at `/synthetic-data`.
 
 ## Suggested Scenarios
 

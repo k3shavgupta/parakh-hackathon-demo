@@ -1,22 +1,32 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import {
   AlertTriangle,
   ArrowLeft,
+  BrainCircuit,
   CheckCircle2,
   Download,
   FileText,
+  LoaderCircle,
   Printer,
 } from 'lucide-react';
 
+import type { AiAttributionResult } from '@/lib/ai-attribution';
+import {
+  createSyntheticReportPdf,
+  type ReportAiReasoningState,
+} from '@/lib/report-pdf';
 import type { SyntheticReport } from '@/lib/synthetic-engine';
 import { SCENARIOS } from '@/lib/synthetic-engine';
 import { cn } from '@/lib/utils';
 
 const disclosure =
   'This hackathon demo uses synthetic data only. It does not access live government systems, private records, real GSTINs, PANs, Aadhaar numbers, OTPs, payments, or production Parakh data.';
+const legalDisclaimer =
+  'CICRA 2005 note: This synthetic demonstration is not a credit information report, legal opinion, or automated credit decision.';
 
 function badgeClass(label: 'FLAG' | 'CLEAR' | 'NOTE') {
   if (label === 'FLAG') return 'border-[#e8b7bd] bg-[#fff3f4] text-[#a33f4a]';
@@ -24,29 +34,40 @@ function badgeClass(label: 'FLAG' | 'CLEAR' | 'NOTE') {
   return 'border-[#eadbc8] bg-[#fff8ed] text-[#916022]';
 }
 
-function reportToText(report: SyntheticReport) {
-  return [
-    `Parakh synthetic report ${report.reportId}`,
-    `Synthetic GSTIN: ${report.searchedIdentifier}`,
-    `Generated: ${report.generatedAt}`,
-    '',
-    disclosure,
-    '',
-    report.summary,
-    '',
-    `Entity: ${report.business.legalName}`,
-    `Trade name: ${report.business.tradeName}`,
-    `State: ${report.business.registrationState}`,
-    '',
-    'Observations:',
-    ...report.observations.map(
-      (item) =>
-        `- ${item.label}: ${item.title}. ${item.detail} Confidence: ${item.confidence}. Attribution: ${item.attribution}. Provenance: ${item.provenance}`,
-    ),
-    '',
-    'What we could not find:',
-    ...report.cannotFind.map((item) => `- ${item}`),
-  ].join('\n');
+function decisionLabel(decision: AiAttributionResult['decision']) {
+  if (decision === 'ATTRIBUTED') return 'ATTRIBUTED';
+  if (decision === 'NOT_ATTRIBUTED') return 'NOT ATTRIBUTED';
+  return 'UNCERTAIN';
+}
+
+function isAiAttributionResult(value: unknown): value is AiAttributionResult {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const candidate = value as Record<string, unknown>;
+  return (
+    (candidate.decision === 'ATTRIBUTED' ||
+      candidate.decision === 'NOT_ATTRIBUTED' ||
+      candidate.decision === 'UNCERTAIN') &&
+    (candidate.confidence === 'High' ||
+      candidate.confidence === 'Medium' ||
+      candidate.confidence === 'Low') &&
+    typeof candidate.justification === 'string' &&
+    candidate.justification.length > 0
+  );
+}
+
+function aiStateForRecord(
+  reasoning: Record<string, ReportAiReasoningState>,
+  recordId: string,
+  fixtureSignal: 'FLAG' | 'CLEAR' | 'NOTE',
+) {
+  return (
+    reasoning[recordId] ?? {
+      status: 'fallback' as const,
+      fixtureSignal,
+    }
+  );
 }
 
 function PrimaryObservation({
@@ -106,6 +127,55 @@ function openScenario(identifier: string) {
 }
 
 export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
+  const [reasoning, setReasoning] = useState<
+    Record<string, ReportAiReasoningState>
+  >({});
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const records = report.publicRecords;
+    if (!records.length) return undefined;
+
+    setReasoning(
+      Object.fromEntries(
+        records.map((record) => [record.id, { status: 'loading' }]),
+      ),
+    );
+
+    void Promise.all(
+      records.map(async (record) => {
+        try {
+          const response = await fetch('/api/ai-attribution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: report.searchedIdentifier,
+              recordId: record.id,
+            }),
+          });
+          if (!response.ok) throw new Error('AI attribution unavailable');
+          const value: unknown = await response.json();
+          if (!isAiAttributionResult(value)) {
+            throw new Error('Invalid AI attribution response');
+          }
+          return [record.id, { status: 'success', result: value }] as const;
+        } catch {
+          return [
+            record.id,
+            { status: 'fallback', fixtureSignal: record.signal },
+          ] as const;
+        }
+      }),
+    ).then((entries) => {
+      if (!cancelled) setReasoning(Object.fromEntries(entries));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [report.publicRecords, report.searchedIdentifier]);
+
   const delayed = report.filingPattern.rows.filter(
     (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
   ).length;
@@ -115,9 +185,6 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
   const noteCount = report.observations.filter(
     (observation) => observation.label === 'NOTE',
   ).length;
-  const downloadHref = `data:text/plain;charset=utf-8,${encodeURIComponent(
-    reportToText(report),
-  )}`;
   const identityObservation =
     report.observations.find((item) => item.title.includes('Name')) ??
     report.observations[0];
@@ -129,6 +196,23 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
     report.observations.find((item) => item.title.includes('Public-record')) ??
     report.observations.find((item) => item.title.includes('alias')) ??
     report.observations[report.observations.length - 1];
+
+  async function downloadPdf() {
+    setPdfBusy(true);
+    try {
+      const bytes = await createSyntheticReportPdf(report, reasoning);
+      const url = URL.createObjectURL(
+        new Blob([bytes], { type: 'application/pdf' }),
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${report.reportId.toLowerCase()}-synthetic-report.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
@@ -152,14 +236,15 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
               <Printer className="size-4" />
               Print
             </button>
-            <a
-              href={downloadHref}
-              download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
+            <button
+              type="button"
+              onClick={() => void downloadPdf()}
+              disabled={pdfBusy}
               className="hidden h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#7a336f] sm:inline-flex"
             >
               <Download className="size-4" />
-              Download
-            </a>
+              {pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
+            </button>
           </div>
         </div>
       </nav>
@@ -243,6 +328,8 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
 
         <div className="mt-6 rounded-[24px] bg-[#201b1e] p-5 text-sm leading-6 text-white sm:p-6">
           <strong>Synthetic-data disclosure:</strong> {disclosure}
+          <br />
+          <strong>{legalDisclaimer}</strong>
         </div>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
@@ -335,6 +422,13 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
                     <p className="mt-3 text-sm leading-6 text-[#675b63]">
                       {record.summary}
                     </p>
+                    <p className="mt-2 text-xs leading-5 text-[#8b7c84]">
+                      {record.caseReference} · {record.courtName}
+                      <br />
+                      Parties: {record.parties.join(' · ')} · {record.partySide}
+                      <br />
+                      Match basis: {record.matchBasis}
+                    </p>
                     <p className="mt-2 text-xs text-[#8b7c84]">
                       {record.date} · Confidence {record.confidence} ·{' '}
                       {record.provenance}
@@ -344,6 +438,74 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
               ) : (
                 <div className="rounded-[18px] bg-[#fbf8f5] p-4 text-sm leading-6 text-[#675b63]">
                   No synthetic public-record signal is present in this fixture.
+                </div>
+              )}
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="AI Attribution Reasoning"
+            kicker="Runtime model review · synthetic evidence"
+          >
+            <div className="space-y-3">
+              {report.publicRecords.length ? (
+                report.publicRecords.map((record) => {
+                  const state = aiStateForRecord(
+                    reasoning,
+                    record.id,
+                    record.signal,
+                  );
+                  return (
+                    <div
+                      key={record.id}
+                      className="rounded-[18px] border border-[#e7d7e3] bg-[#fbf2f7] p-4"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <BrainCircuit className="size-4 text-[#7a336f]" />
+                        <span className="font-semibold">{record.id}</span>
+                        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-[#7a336f]">
+                          {state.status === 'loading'
+                            ? 'THINKING'
+                            : state.status === 'success'
+                              ? decisionLabel(state.result.decision)
+                              : 'FALLBACK'}
+                        </span>
+                      </div>
+                      {state.status === 'loading' ? (
+                        <div className="mt-3 flex items-center gap-2 text-sm leading-6 text-[#675b63]">
+                          <LoaderCircle className="size-4 animate-spin text-[#7a336f]" />
+                          Reviewing the synthetic entity and candidate record…
+                        </div>
+                      ) : state.status === 'success' ? (
+                        <>
+                          <p className="mt-3 text-sm font-semibold text-[#201b1e]">
+                            {state.result.justification}
+                          </p>
+                          <p className="mt-2 text-xs text-[#8b7c84]">
+                            Confidence {state.result.confidence} · Decision{' '}
+                            {decisionLabel(state.result.decision)} · Runtime
+                            OpenAI response
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="mt-3 text-sm font-semibold text-[#916022]">
+                            AI reasoning unavailable, showing fixture-based grade:{' '}
+                            {state.fixtureSignal}
+                          </p>
+                          <p className="mt-2 text-xs text-[#8b7c84]">
+                            The static synthetic signal remains visible; no AI
+                            conclusion was substituted.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="rounded-[18px] bg-[#fbf8f5] p-4 text-sm leading-6 text-[#675b63]">
+                  No synthetic public-record signal is present, so there is no
+                  candidate record to attribute.
                 </div>
               )}
             </div>
@@ -452,20 +614,21 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
           </Link>
           <button
             type="button"
+            onClick={() => void downloadPdf()}
+            disabled={pdfBusy}
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7a336f] px-5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            <Download className="size-4" />
+            {pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
+          </button>
+          <button
+            type="button"
             onClick={() => window.print()}
             className="inline-flex h-11 items-center gap-2 rounded-full bg-[#201b1e] px-5 text-sm font-semibold text-white"
           >
             <Printer className="size-4" />
             Print report
           </button>
-          <a
-            href={downloadHref}
-            download={`${report.reportId.toLowerCase()}-synthetic-report.txt`}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7a336f] px-5 text-sm font-semibold text-white"
-          >
-            <Download className="size-4" />
-            Download text
-          </a>
         </div>
       </section>
     </main>

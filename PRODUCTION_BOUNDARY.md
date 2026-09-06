@@ -9,7 +9,9 @@ Parakh services.
 - Production Parakh code or data.
 - Clerk authentication.
 - Payments, invoices, checkout, entitlements, or webhooks.
-- Databases, queues, storage buckets, or production secrets.
+- Databases, queues, storage buckets, or production secrets. A local-only
+  OpenAI key may be configured for the isolated demo route and is never sent to
+  the browser.
 - Live GST, MCA, court, government, private-record, or scraping systems.
 - Real GSTINs, PANs, Aadhaar numbers, OTPs, bank details, or personal records.
 

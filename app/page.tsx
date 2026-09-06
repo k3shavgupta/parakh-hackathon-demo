@@ -6,7 +6,7 @@ import { ArrowRight, Check, FileSearch, ShieldCheck } from 'lucide-react';
 
 import {
   SCENARIOS,
-  isAllowedSyntheticIdentifier,
+  resolveSyntheticSearch,
 } from '@/lib/synthetic-engine';
 import { cn } from '@/lib/utils';
 
@@ -50,15 +50,15 @@ export default function Home() {
   const [error, setError] = useState('');
 
   function runSearch(identifier: string) {
-    const normalized = identifier.trim().toUpperCase();
-    if (!isAllowedSyntheticIdentifier(normalized)) {
+    const match = resolveSyntheticSearch(identifier);
+    if (!match) {
       setError(
-        'Use one of the listed synthetic GSTIN-style IDs. Real-looking IDs are blocked.',
+        'No synthetic sample matched. Try Aarav Precision, Navkaar Metro, Setu Freight, or one of the listed sample businesses.',
       );
       return;
     }
 
-    window.location.href = `/report/${encodeURIComponent(normalized)}`;
+    window.location.href = `/report/${encodeURIComponent(match.identifier)}`;
   }
 
   return (
@@ -78,6 +78,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#sample">Sample report</a>
             <a href="#boundary">Synthetic boundary</a>
+            <Link href="/synthetic-data">Evidence Lab</Link>
           </div>
           <button
             type="button"
@@ -96,7 +97,7 @@ export default function Home() {
             GST + court record check
           </p>
           <h1 className="mx-auto mt-5 max-w-3xl text-5xl font-semibold leading-[1.02] sm:text-6xl lg:text-7xl">
-            One GSTIN.
+            One synthetic search.
             <br />
             The{' '}
             <span className="font-serif italic font-normal text-[#8a3d7f]">
@@ -104,8 +105,9 @@ export default function Home() {
             </span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#675b63] sm:text-lg">
-            Before you send goods on credit, run a synthetic Parakh check. The
-            demo opens a real report page using local fixture data only.
+            Before you send goods on credit, run a synthetic Parakh check by
+            business name or demo identifier. The report uses local fixture
+            data only, with a live attribution reasoning step for each signal.
           </p>
 
           <form
@@ -116,7 +118,8 @@ export default function Home() {
             }}
           >
             <input
-              aria-label="Synthetic firm GSTIN"
+              aria-label="Synthetic business name or GSTIN"
+              placeholder="Try Setu Freight or SYN-GSTIN-COURT-004"
               value={value}
               onChange={(event) => {
                 setValue(event.target.value);
@@ -189,15 +192,15 @@ export default function Home() {
               Choose a synthetic firm
             </p>
             <h2 className="mt-5 text-4xl font-semibold leading-tight sm:text-5xl">
-              Search any listed synthetic{' '}
+              Search any listed synthetic business or{' '}
               <span className="font-serif italic font-normal text-[#8a3d7f]">
                 GSTIN.
               </span>
             </h2>
             <p className="mt-4 leading-7 text-[#675b63]">
-              Judges can type or click these fake identifiers. Each opens its
-              own report page, so the prototype feels like the real Parakh
-              journey without touching live systems.
+              Judges can type a business name, alias, or fake identifier, or
+              click a card. Each opens its own report page, so the prototype
+              feels like the real Parakh journey without touching live systems.
             </p>
           </div>
           <div className="grid gap-3">
@@ -235,17 +238,18 @@ export default function Home() {
               Instant report, not ten days.
             </h2>
             <p className="mt-4 leading-7 text-white/68">
-              Enter one synthetic firm GSTIN. The local v4-style engine loads
-              fixture profile, filing, and public-record examples, then creates
-              an evidence-first report with no score or credit verdict.
+              Enter one synthetic business name or demo identifier. The local
+              v4-style engine loads fixture evidence, then asks a live model to
+              reason about each public-record attribution without issuing a
+              score or credit verdict.
             </p>
           </div>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {[
               [
                 '1',
-                'You enter one synthetic GSTIN',
-                'A fake identifier from the demo scenarios, never a real GSTIN or PAN.',
+                'You enter a synthetic search',
+                'A business name, alias, or fake identifier from the five demo scenarios.',
               ],
               [
                 '2',
@@ -254,8 +258,8 @@ export default function Home() {
               ],
               [
                 '3',
-                'A report page opens',
-                'The screen shows FLAG, CLEAR, and NOTE observations with limits and sources.',
+                'AI reasoning joins the report',
+                'Each returned signal gets a visible attribution decision, confidence, or safe fallback.',
               ],
             ].map(([number, title, body]) => (
               <div key={title} className="rounded-[24px] bg-white/[0.06] p-6">
@@ -317,8 +321,7 @@ export default function Home() {
       <footer className="px-5 pb-10 text-center text-xs font-semibold text-[#8b7c84]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 rounded-full bg-white px-4 py-3">
           <Check className="size-4 text-[#2d6a48]" />
-          Standalone Build What Moves India prototype. Production parakh.biz is
-          unchanged.
+          Standalone Build What Moves India prototype.
         </div>
       </footer>
     </main>

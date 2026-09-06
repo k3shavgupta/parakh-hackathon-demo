@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   SCENARIOS,
   buildSyntheticReport,
+  getSyntheticScenario,
   isAllowedSyntheticIdentifier,
+  resolveSyntheticSearch,
 } from '../lib/synthetic-engine';
 
 describe('synthetic v4 report engine', () => {
@@ -54,5 +56,35 @@ describe('synthetic v4 report engine', () => {
       'SYN-GSTIN-COURT-004',
       'SYN-GSTIN-PARTIAL-005',
     ]);
+  });
+
+  it('resolves legal names, aliases, and small search typos to known fixtures', () => {
+    expect(
+      resolveSyntheticSearch('Setu Freight Corridors Private Limited')
+        ?.identifier,
+    ).toBe('SYN-GSTIN-COURT-004');
+    expect(resolveSyntheticSearch('Navkar Metro')?.identifier).toBe(
+      'SYN-GSTIN-DELAY-002',
+    );
+    expect(resolveSyntheticSearch('Prism Rual Tools')?.identifier).toBe(
+      'SYN-GSTIN-PARTIAL-005',
+    );
+  });
+
+  it('does not resolve unrelated or real-looking search input', () => {
+    expect(resolveSyntheticSearch('')).toBeNull();
+    expect(resolveSyntheticSearch('Unknown Demo Industries')).toBeNull();
+    expect(resolveSyntheticSearch('27ABCDE1234F1Z5')).toBeNull();
+  });
+
+  it('exposes unmistakably synthetic public-record metadata for AI prompts', () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-COURT-004');
+    expect(scenario?.publicRecords).toHaveLength(2);
+    expect(scenario?.publicRecords[0]).toMatchObject({
+      caseReference: 'SYNTHETIC-CASE-DEMO-014',
+      courtName: 'Synthetic Demo Court — Example Bench',
+      partySide: 'named-party',
+      matchBasis: 'Exact synthetic legal-name match',
+    });
   });
 });

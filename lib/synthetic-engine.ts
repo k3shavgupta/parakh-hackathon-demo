@@ -34,6 +34,7 @@ export type SyntheticReport = {
     registrationState: string;
     registrationStatus: string;
     syntheticAddress: string;
+    syntheticPanPattern: string;
     normalizedNames: string[];
     provenance: string;
   };
@@ -45,9 +46,13 @@ export type SyntheticReport = {
   publicRecords: {
     id: string;
     date: string;
+    caseReference: string;
+    courtName: string;
     signal: SyntheticLabel;
     summary: string;
     parties: string[];
+    partySide: 'named-party' | 'alias-party' | 'not-applicable';
+    matchBasis: string;
     confidence: 'High' | 'Medium' | 'Low';
     provenance: string;
   }[];
@@ -63,6 +68,20 @@ export const SCENARIOS = RAW_SYNTHETIC_SCENARIOS.map((scenario) => ({
   scenarioType: scenario.scenarioType,
   judgePrompt: scenario.judgePrompt,
 }));
+
+export type SyntheticScenarioSummary = {
+  id: string;
+  identifier: string;
+  shortName: string;
+  scenarioType: string;
+  legalName: string;
+  tradeName: string;
+  nameVariants: string[];
+};
+
+export type SyntheticSearchMatch = SyntheticScenarioSummary & {
+  score: number;
+};
 
 const SYNTHETIC_IDENTIFIER = /^SYN-GSTIN-[A-Z]+-\d{3}$/;
 const GSTIN_LIKE = /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/;
@@ -86,6 +105,123 @@ function normalizeName(value: string) {
     .replace(/\bLIMITED\b/g, 'LTD')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function searchTokens(value: string) {
+  return normalizeName(value)
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .split(' ')
+    .filter(Boolean);
+}
+
+function editDistance(left: string, right: string) {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) =>
+    index,
+  );
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] +
+          (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1),
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[right.length];
+}
+
+function scoreSearchCandidate(query: string, candidate: string) {
+  const normalizedQuery = normalizeName(query);
+  const normalizedCandidate = normalizeName(candidate);
+
+  if (
+    normalizedQuery === normalizedCandidate ||
+    normalizedCandidate.includes(normalizedQuery) ||
+    normalizedQuery.includes(normalizedCandidate)
+  ) {
+    return 1;
+  }
+
+  const queryTokens = searchTokens(query);
+  const candidateTokens = searchTokens(candidate);
+  const candidateTokenSet = new Set(candidateTokens);
+  const sharedTokens = queryTokens.filter((token) =>
+    candidateTokenSet.has(token),
+  ).length;
+  const tokenScore = sharedTokens / Math.max(queryTokens.length, 1);
+  const maximumLength = Math.max(normalizedQuery.length, normalizedCandidate.length);
+  const editScore =
+    maximumLength === 0
+      ? 0
+      : 1 - editDistance(normalizedQuery, normalizedCandidate) / maximumLength;
+
+  return tokenScore * 0.7 + editScore * 0.3;
+}
+
+function summarizeScenarioMetadata(
+  scenario: (typeof RAW_SYNTHETIC_SCENARIOS)[number],
+): SyntheticScenarioSummary {
+  return {
+    id: scenario.id,
+    identifier: scenario.identifier,
+    shortName: scenario.shortName,
+    scenarioType: scenario.scenarioType,
+    legalName: scenario.business.legalName,
+    tradeName: scenario.business.tradeName,
+    nameVariants: scenario.business.nameVariants,
+  };
+}
+
+export function getSyntheticScenario(identifier: string) {
+  const normalizedIdentifier = identifier.trim().toUpperCase();
+  return RAW_SYNTHETIC_SCENARIOS.find(
+    (scenario) => scenario.identifier === normalizedIdentifier,
+  );
+}
+
+export function resolveSyntheticSearch(
+  value: string,
+): SyntheticSearchMatch | null {
+  const normalizedValue = value.trim().toUpperCase();
+  if (
+    !normalizedValue ||
+    GSTIN_LIKE.test(normalizedValue) ||
+    PAN_LIKE.test(normalizedValue) ||
+    AADHAAR_LIKE.test(normalizedValue)
+  ) {
+    return null;
+  }
+
+  const exactScenario = getSyntheticScenario(normalizedValue);
+  if (exactScenario) {
+    return { ...summarizeScenarioMetadata(exactScenario), score: 1 };
+  }
+
+  let bestMatch: SyntheticSearchMatch | null = null;
+  for (const scenario of RAW_SYNTHETIC_SCENARIOS) {
+    const summary = summarizeScenarioMetadata(scenario);
+    const candidates = [
+      summary.legalName,
+      summary.tradeName,
+      ...summary.nameVariants,
+    ];
+    const score = Math.max(
+      ...candidates.map((candidate) =>
+        scoreSearchCandidate(normalizedValue, candidate),
+      ),
+    );
+
+    if (!bestMatch || score > bestMatch.score) {
+      bestMatch = { ...summary, score };
+    }
+  }
+
+  return bestMatch && bestMatch.score >= 0.58 ? bestMatch : null;
 }
 
 function formatPeriod(period: string) {
@@ -243,9 +379,7 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
     );
   }
 
-  const scenario = RAW_SYNTHETIC_SCENARIOS.find(
-    (fixture) => fixture.identifier === normalizedIdentifier,
-  );
+  const scenario = getSyntheticScenario(normalizedIdentifier);
 
   if (!scenario) {
     throw new Error('No local synthetic fixture exists for this identifier.');
@@ -278,6 +412,7 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       registrationState: scenario.business.registrationState,
       registrationStatus: scenario.business.registrationStatus,
       syntheticAddress: scenario.business.syntheticAddress,
+      syntheticPanPattern: scenario.business.syntheticPanPattern,
       normalizedNames: [
         scenario.business.legalName,
         ...scenario.business.nameVariants,
@@ -295,9 +430,13 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
     publicRecords: scenario.publicRecords.map((record) => ({
       id: record.id,
       date: formatDate(record.date),
+      caseReference: record.caseReference,
+      courtName: record.courtName,
       signal: record.signal,
       summary: record.summary,
       parties: record.parties.map(normalizeName),
+      partySide: record.partySide,
+      matchBasis: record.matchBasis,
       confidence: record.confidence,
       provenance: record.source,
     })),
@@ -308,6 +447,8 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       'Load local synthetic profile, filing, and public-record fixtures',
       'Normalize names, dates, filing periods, and record parties',
       'Create observations with FLAG, CLEAR, and NOTE labels only',
+      'Run server-side AI attribution reasoning for each returned public-record signal',
+      'Render model decision, confidence, justification, or fixture-grade fallback',
       'Attach confidence, attribution, provenance, limits, and synthetic disclosure',
     ],
   };
