@@ -1,6 +1,7 @@
 import {
   RAW_SYNTHETIC_SCENARIOS,
   type SyntheticLabel,
+  type RawPublicRecord,
 } from './synthetic-fixtures';
 
 export type Observation = {
@@ -28,6 +29,9 @@ export type SyntheticReport = {
   syntheticDisclosure: string;
   summary: string;
   business: {
+    personName: string;
+    registeredDate: string;
+    context: string;
     legalName: string;
     tradeName: string;
     constitution: string;
@@ -44,6 +48,12 @@ export type SyntheticReport = {
     confidence: 'High' | 'Medium' | 'Low';
   };
   publicRecords: {
+    category: RawPublicRecord['category'];
+    role: RawPublicRecord['role'];
+    proceedingType: string;
+    matchedEntity: string;
+    identityEvidence: string;
+    filedYear: string;
     id: string;
     date: string;
     caseReference: string;
@@ -433,6 +443,9 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       observations.map((observation) => observation.label),
     ),
     business: {
+      personName: scenario.business.personName,
+      registeredDate: formatDate(scenario.business.registeredDate),
+      context: scenario.business.context,
       legalName: scenario.business.legalName,
       tradeName: scenario.business.tradeName,
       constitution: scenario.business.constitution,
@@ -455,6 +468,12 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       confidence: rows.length < 3 ? 'Low' : 'High',
     },
     publicRecords: scenario.publicRecords.map((record) => ({
+      category: record.category,
+      role: record.role,
+      proceedingType: record.proceedingType,
+      matchedEntity: record.matchedEntity,
+      identityEvidence: record.identityEvidence,
+      filedYear: record.date.slice(0, 4),
       id: record.id,
       date: formatDate(record.date),
       caseReference: record.caseReference,
@@ -476,6 +495,7 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       'Create observations with FLAG, CLEAR, and NOTE labels only',
       'Run server-side AI attribution reasoning for each returned public-record signal',
       'Render model decision, confidence, justification, or fixture-grade fallback',
+      'Synthesize the resolved attribution results and filing evidence into one descriptive AI Summary',
       'Attach confidence, attribution, provenance, limits, and synthetic disclosure',
     ],
   };

@@ -10,6 +10,10 @@ export type RawFiling = {
 
 export type RawPublicRecord = {
   id: string;
+  role: 'Petitioner' | 'Respondent' | 'Not applicable';
+  proceedingType: string;
+  matchedEntity: string;
+  identityEvidence: string;
   category: 'civil' | 'tax' | 'supplier-dispute' | 'registry';
   caseReference: string;
   courtName: string;
@@ -30,6 +34,9 @@ export type SyntheticScenario = {
   scenarioType: string;
   judgePrompt: string;
   business: {
+    personName: string;
+    registeredDate: string;
+    context: string;
     legalName: string;
     tradeName: string;
     constitution: string;
@@ -57,14 +64,21 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     judgePrompt:
       'A regular components distributor with consistent synthetic filing history.',
     business: {
-      legalName: 'Aarav Precision Supplies Private Limited',
-      tradeName: 'Aarav Precision',
+      personName: 'Demo Aarav Cloudpetal',
+      registeredDate: '2026-01-12',
+      context:
+        'This fictional private limited company is presented through its legal name and trade-name aliases. The named person is a demo contact, not verified ownership evidence.',
+      legalName: 'Aarav Cloudpetal Demo Supplies Private Limited',
+      tradeName: 'Aarav Cloudpetal Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Uttar Pradesh',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Plot SYN-14, Cooperative Industrial Area, Kanpur',
+      syntheticAddress: 'Demo Plot ALPHA, Cloudpetal Lane, Fictional Township',
       syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-ALPHA',
-      nameVariants: ['Aarav Precision Supplies Pvt Ltd', 'Aarav Precision'],
+      nameVariants: [
+        'Aarav Cloudpetal Demo Supplies Pvt Ltd',
+        'Aarav Cloudpetal Demo',
+      ],
       source: fixtureSource,
     },
     filings: [
@@ -107,11 +121,16 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     publicRecords: [
       {
         id: 'SYN-REG-CLEAR-011',
+        role: 'Not applicable',
+        proceedingType: 'Registry entry',
+        matchedEntity: 'Aarav Cloudpetal Demo Supplies Private Limited',
+        identityEvidence:
+          'Exact legal name and declared alias in the fictional registry entry.',
         category: 'registry',
-        caseReference: 'SYNTHETIC-RECORD-DEMO-011',
+        caseReference: 'DEMO-RECORD-0011',
         courtName: 'Synthetic Registry Ledger — Example Only',
         date: '2026-08-10',
-        parties: ['Aarav Precision Supplies Private Limited'],
+        parties: ['Aarav Cloudpetal Demo Supplies Private Limited'],
         partySide: 'named-party',
         matchBasis: 'Exact synthetic legal-name match',
         signal: 'CLEAR',
@@ -135,16 +154,20 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     judgePrompt:
       'A supplier with repeated delayed synthetic filings across recent periods.',
     business: {
-      legalName: 'Navkaar Metro Components Private Limited',
-      tradeName: 'Navkaar Metro',
+      personName: 'Demo Nira Moonloom',
+      registeredDate: '2026-01-12',
+      context:
+        'This fictional private limited company uses several spelling variants in its demo records. Return activity is shown separately from entity identity.',
+      legalName: 'Navkaar Moonloom Demo Components Private Limited',
+      tradeName: 'Navkaar Moonloom Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Maharashtra',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Unit SYN-8, Western Supply Cluster, Pune',
+      syntheticAddress: 'Demo Unit BRAVO, Moonloom Arcade, Fictional Township',
       syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-BRAVO',
       nameVariants: [
-        'Navkar Metro Components Pvt Ltd',
-        'Navkaar Metro Components',
+        'Navkar Moonloom Demo Components Pvt Ltd',
+        'Navkaar Moonloom Demo Components',
       ],
       source: fixtureSource,
     },
@@ -200,17 +223,22 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     judgePrompt:
       'A buyer sees similar but non-identical names across invoices and fixture records.',
     business: {
-      legalName: 'Dakshin Alloy Works Limited',
-      tradeName: 'Dakshin Alloy',
+      personName: 'Demo Tara Papercloud',
+      registeredDate: '2026-01-12',
+      context:
+        'This fictional public limited company has similar-name candidates. A shared word or alias alone does not establish that a record belongs to this entity.',
+      legalName: 'Dakshin Papercloud Demo Works Limited',
+      tradeName: 'Dakshin Papercloud Demo',
       constitution: 'Public Limited Company',
       registrationState: 'Tamil Nadu',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'SYN Works Road, Foundry Extension, Coimbatore',
+      syntheticAddress:
+        'Demo Works CHARLIE, Papercloud Avenue, Fictional Township',
       syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-CHARLIE',
       nameVariants: [
-        'Dakshin Alloys Works Ltd',
-        'Dakshin Alloy Traders',
-        'Dakshin Alloy',
+        'Dakshin Papercloud Demos Works Ltd',
+        'Dakshin Papercloud Demo Traders',
+        'Dakshin Papercloud Demo',
       ],
       source: fixtureSource,
     },
@@ -247,11 +275,19 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     publicRecords: [
       {
         id: 'SYN-REG-MISMATCH-027',
+        role: 'Not applicable',
+        proceedingType: 'Registry alias entry',
+        matchedEntity: 'Dakshin Papercloud Demo Traders',
+        identityEvidence:
+          'Alias resembles the searched entity; independent identity evidence is absent.',
         category: 'registry',
-        caseReference: 'SYNTHETIC-RECORD-DEMO-027',
+        caseReference: 'DEMO-RECORD-0027',
         courtName: 'Synthetic Registry Ledger — Example Only',
         date: '2026-07-20',
-        parties: ['Dakshin Alloy Works Limited', 'Dakshin Alloy Traders'],
+        parties: [
+          'Dakshin Papercloud Demo Works Limited',
+          'Dakshin Papercloud Demo Traders',
+        ],
         partySide: 'alias-party',
         matchBasis: 'Similar synthetic alias; legal name is not exact',
         signal: 'FLAG',
@@ -262,16 +298,21 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       },
       {
         id: 'SYN-REG-MISMATCH-028',
+        role: 'Not applicable',
+        proceedingType: 'Registry entry',
+        matchedEntity: 'Dakshin Papercloud Demo Traders Private Limited',
+        identityEvidence:
+          'This is a separately named fictional entity; shared words do not connect it.',
         category: 'registry',
-        caseReference: 'SYNTHETIC-RECORD-DEMO-028',
+        caseReference: 'DEMO-RECORD-0028',
         courtName: 'Synthetic Registry Ledger — Example Only',
         date: '2026-07-22',
-        parties: ['Dakshin Alloy Traders Private Limited'],
+        parties: ['Dakshin Papercloud Demo Traders Private Limited'],
         partySide: 'not-applicable',
         matchBasis: 'Similar words only; different synthetic legal entity',
         signal: 'NOTE',
         summary:
-          'A separate fictional legal entity shares the words Dakshin Alloy, but the searched synthetic entity is not named in this record.',
+          'A separate fictional legal entity shares the words Dakshin Papercloud Demo, but the searched synthetic entity is not named in this record.',
         source: fixtureSource,
         confidence: 'High',
       },
@@ -290,14 +331,22 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     judgePrompt:
       'A logistics vendor with a fictional supplier-dispute signal for review.',
     business: {
-      legalName: 'Setu Freight Corridors Private Limited',
-      tradeName: 'Setu Freight',
+      personName: 'Demo Ishan Starling',
+      registeredDate: '2026-01-12',
+      context:
+        'This fictional private limited company has court candidates under its legal and trade names. Company identity and each record attribution need separate review.',
+      legalName: 'Setu Starling Demo Corridors Private Limited',
+      tradeName: 'Setu Starling Demo',
       constitution: 'Private Limited Company',
       registrationState: 'Gujarat',
       registrationStatus: 'Active in synthetic registry',
-      syntheticAddress: 'Warehouse SYN-22, Inland Movement Park, Ahmedabad',
+      syntheticAddress:
+        'Demo Warehouse DELTA, Starling Yard, Fictional Township',
       syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-DELTA',
-      nameVariants: ['Setu Freight Corridors Pvt Ltd', 'Setu Freight'],
+      nameVariants: [
+        'Setu Starling Demo Corridors Pvt Ltd',
+        'Setu Starling Demo',
+      ],
       source: fixtureSource,
     },
     filings: [
@@ -333,13 +382,18 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     publicRecords: [
       {
         id: 'SYN-CIV-2026-014',
+        role: 'Respondent',
+        proceedingType: 'Fictional supplier claim',
+        matchedEntity: 'Setu Starling Demo Corridors Private Limited',
+        identityEvidence:
+          'The candidate names the exact fictional legal entity; no outcome is supplied.',
         category: 'supplier-dispute',
-        caseReference: 'SYNTHETIC-CASE-DEMO-014',
-        courtName: 'Synthetic Demo Court — Example Bench',
+        caseReference: 'DEMO-CASE-0014',
+        courtName: 'Synthetic Civil Court, Demo Division',
         date: '2026-06-18',
         parties: [
-          'Setu Freight Corridors Private Limited',
-          'Rudra Packaging Works',
+          'Setu Starling Demo Corridors Private Limited',
+          'Demo Moonkite Packaging',
         ],
         partySide: 'named-party',
         matchBasis: 'Exact synthetic legal-name match',
@@ -351,11 +405,16 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
       },
       {
         id: 'SYN-CIV-2025-032',
+        role: 'Petitioner',
+        proceedingType: 'Fictional civil application',
+        matchedEntity: 'Setu Starling Demo',
+        identityEvidence:
+          'Only a trade-name alias is supplied; legal identity remains unresolved.',
         category: 'civil',
-        caseReference: 'SYNTHETIC-CASE-DEMO-032',
-        courtName: 'Synthetic Demo Court — Example Bench',
+        caseReference: 'DEMO-CASE-0032',
+        courtName: 'Synthetic Civil Court, Demo Division',
         date: '2025-11-04',
-        parties: ['Setu Freight', 'Harbor Link Warehousing'],
+        parties: ['Setu Starling Demo', 'Demo Lanternbird Warehousing'],
         partySide: 'alias-party',
         matchBasis: 'Synthetic trade-name alias; human review required',
         signal: 'NOTE',
@@ -379,14 +438,19 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
     judgePrompt:
       'A new or thin-file business where Parakh should avoid overclaiming.',
     business: {
-      legalName: 'Prism Rural Tools OPC Private Limited',
-      tradeName: 'Prism Rural Tools',
+      personName: 'Demo Mira Meadowglass',
+      registeredDate: '2026-06-01',
+      context:
+        'This fictional one person company has a short filing window. The demo contact and registration marker do not establish a longer operating history.',
+      legalName: 'Prism Meadowglass Demo Tools OPC Private Limited',
+      tradeName: 'Prism Meadowglass Demo Tools',
       constitution: 'One Person Company',
       registrationState: 'Karnataka',
       registrationStatus: 'Recently active in synthetic registry',
-      syntheticAddress: 'SYN Innovation Yard, Mysuru',
+      syntheticAddress:
+        'Demo Studio ECHO, Meadowglass Lane, Fictional Township',
       syntheticPanPattern: 'SYNTHETIC-PAN-PATTERN-ECHO',
-      nameVariants: ['Prism Rural Tools OPC', 'Prism Tools'],
+      nameVariants: ['Prism Meadowglass Demo Tools OPC', 'Prism Demo Tools'],
       source: fixtureSource,
     },
     filings: [

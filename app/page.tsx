@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   BadgeCheck,
+  BrainCircuit,
   Building2,
   Check,
   FileSearch,
@@ -51,9 +52,9 @@ const workingToday = [
   'Local synthetic profile lookup',
   'Normalized filing-pattern evidence',
   'Synthetic public-record examples',
+  'AI attribution reasoning with factors & confidence gauge',
   'Explainable FLAG, CLEAR, and NOTE observations',
-  'Dedicated report URLs and scenario switching',
-  'Fixture-only A4 PDF download',
+  'Fixture-only A4 PDF with AI reasoning',
 ];
 
 export default function Home() {
@@ -443,6 +444,129 @@ export default function Home() {
               </ul>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section
+        id="reasoning"
+        aria-labelledby="reasoning-heading"
+        className="scroll-mt-6 mx-2 mb-5 rounded-[30px] bg-white px-5 py-16 sm:mx-4 sm:px-8 sm:py-24"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[var(--parakh-wash)] px-3 text-xs font-semibold text-[var(--parakh-plum-dark)]">
+              <BrainCircuit className="size-3.5 text-[var(--parakh-plum)]" />
+              Round 2 capability · AI Attribution Reasoning
+            </p>
+            <h2
+              id="reasoning-heading"
+              className="mt-5 text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-[1.06] tracking-[-0.025em]"
+            >
+              Every attribution shows its{' '}
+              <span className="font-serif text-[1.04em] font-normal italic text-[var(--parakh-plum)]">
+                reasoning.
+              </span>
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl leading-7 text-[#675a62]">
+              A wrong attribution could unfairly link an innocent business to someone else&apos;s court case.
+              In Round 2, Parakh introduces AI attribution reasoning that evaluates structured evidence factors
+              and explains its conclusion — showing its full reasoning, not just a yes or no.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+              <div className="flex items-center justify-between">
+                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                  <FileSearch className="size-5" />
+                </span>
+                <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
+                  What it does
+                </span>
+              </div>
+              <h3 className="mt-6 text-xl font-medium">Evidence-based evaluation</h3>
+              <p className="mt-3 leading-7 text-[#6b5e66]">
+                When a public record shares similar names with a searched business, an AI reviewer weighs the synthetic identity evidence, aliases, and filing history to decide whether the candidate truly belongs to the entity.
+              </p>
+            </article>
+
+            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+              <div className="flex items-center justify-between">
+                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                  <ShieldCheck className="size-5" />
+                </span>
+                <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
+                  Why it matters
+                </span>
+              </div>
+              <h3 className="mt-6 text-xl font-medium">Preventing false alarms</h3>
+              <p className="mt-3 leading-7 text-[#6b5e66]">
+                Name similarity is common across Indian commerce. Naive text matches create false associations. Structured factor checks ensure clear distinction between separate businesses before credit decisions are made.
+              </p>
+            </article>
+
+            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+              <div className="flex items-center justify-between">
+                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                  <Scale className="size-5" />
+                </span>
+                <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
+                  What you see
+                </span>
+              </div>
+              <h3 className="mt-6 text-xl font-medium">Factors + confidence visual</h3>
+              <p className="mt-3 leading-7 text-[#6b5e66]">
+                Instead of a black-box verdict, every reviewed record displays structured reasoning factor chips (Name similarity, PAN pattern, Filing overlap), a proportional confidence gauge, and a written justification.
+              </p>
+            </article>
+          </div>
+
+          <div className="mt-8 rounded-[24px] border border-[#e7d7e3] bg-[var(--parakh-wash)] p-6 text-left">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#ebd7e5] pb-4">
+              <div className="flex items-center gap-2">
+                <span className="grid size-8 place-items-center rounded-lg bg-white text-[var(--parakh-plum)]">
+                  <BrainCircuit className="size-4" />
+                </span>
+                <div>
+                  <p className="text-xs font-semibold text-[var(--parakh-plum-dark)]">SPECIMEN PREVIEW</p>
+                  <p className="text-sm font-semibold text-[var(--parakh-ink)]">AI Attribution Reasoning</p>
+                </div>
+              </div>
+              <span className="rounded-full border border-[#2d6a48]/20 bg-white px-3 py-1 text-xs font-semibold text-[#1f6b3a]">
+                ATTRIBUTED
+              </span>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+                <span className="font-normal text-[#675a62]">Name similarity:</span> High
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+                <span className="font-normal text-[#675a62]">PAN pattern:</span> Match
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+                <span className="font-normal text-[#675a62]">Filing overlap:</span> High
+              </span>
+            </div>
+            <p className="mt-3 text-sm font-medium leading-6 text-[var(--parakh-ink)]">
+              The synthetic legal entity name exactly matches the named respondent in the case fixture, and synthetic PAN pattern markers confirm entity continuity.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#8b7c84]">
+              <span className="inline-flex items-center gap-1.5 font-medium text-[var(--parakh-ink)]">
+                <span>Confidence High</span>
+                <span className="inline-flex h-2 w-14 overflow-hidden rounded-full bg-[#f2e3ed]">
+                  <span className="h-full w-full rounded-full bg-[#7a336f]" />
+                </span>
+              </span>
+              <span>·</span>
+              <span>Decision ATTRIBUTED</span>
+              <span>·</span>
+              <span>Runtime AI model output</span>
+            </div>
+          </div>
+
+          <p className="mt-6 text-center text-xs leading-5 text-[#81717a]">
+            AI attribution in this demo evaluates local fictional fixtures only. The model shows its reasoning transparently, alongside the synthetic data limitations described below.
+          </p>
         </div>
       </section>
 

@@ -1,47 +1,16 @@
+import { requestAiAttribution } from '../../../lib/ai-attribution';
 import {
-  createIpRateLimiter,
-  requestAiAttribution,
-} from '../../../lib/ai-attribution';
+  aiRateLimiter as rateLimiter,
+  requestIp,
+  serverEnv,
+} from '../../../lib/ai-server';
 import { getSyntheticScenario } from '../../../lib/synthetic-engine';
-
-const rateLimiter = createIpRateLimiter({
-  limit: 10,
-  windowMs: 60 * 60 * 1000,
-});
 
 function json(data: unknown, status = 200) {
   return Response.json(data, {
     status,
     headers: { 'Cache-Control': 'no-store' },
   });
-}
-
-function requestIp(request: Request) {
-  return (
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-real-ip') ??
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'local-anonymous'
-  );
-}
-
-function serverEnv(
-  name:
-    | 'OPENAI_API_KEY'
-    | 'OPENAI_MODEL'
-    | 'OPENAI_BASE_URL'
-    | 'OPENAI_API_MODE',
-) {
-  const processValue =
-    typeof process === 'undefined' ? undefined : process.env[name];
-  if (processValue) return processValue;
-
-  // Cloudflare's local worker runtime does not expose arbitrary shell env
-  // values through process.env. Static import.meta.env references are kept in
-  // the server bundle and are never included in the client bundle.
-  const importMetaEnv = import.meta.env as ImportMetaEnv &
-    Record<string, string | undefined>;
-  return importMetaEnv[name];
 }
 
 function isAttributionRequest(

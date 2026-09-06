@@ -3,7 +3,7 @@
 This is a standalone public hackathon demo for Parakh. It is not the production
 Parakh app and does not use production data, auth, payments, databases,
 production secrets, or live integrations. An optional local OpenAI key is used
-only by the server-side demo route for attribution reasoning.
+only by server-side demo routes for attribution reasoning and a descriptive AI Summary.
 
 The demo gives judges an instant no-login journey:
 
@@ -37,13 +37,14 @@ OPENAI_MODEL=gpt-4o-mini
 # OPENAI_API_MODE=chat-completions
 ```
 
-The key is read only by `app/api/ai-attribution/route.ts`; it is never included
+The key is read only by the shared server configuration used by
+`app/api/ai-report/route.ts` and `app/api/ai-attribution/route.ts`; it is never included
 in browser code or sent back to the client. To use Amazon Bedrock, set
 OPENAI_API_KEY to a Bedrock API key, OPENAI_BASE_URL to the endpoint for the
 selected region, OPENAI_MODEL to a model ID enabled in that Bedrock region,
 and OPENAI_API_MODE to the protocol supported by that model (`responses` or
-`chat-completions`). The current hackathon Bedrock configuration uses the
-runtime endpoint with `openai.gpt-oss-20b-1:0` and `chat-completions`. Without
+`chat-completions`). The verified release configuration uses the
+Bedrock runtime endpoint with `openai.gpt-oss-120b-1:0` and `chat-completions`. Without
 a key, the report remains usable and explicitly shows the fixture-based grade
 fallback.
 
@@ -64,3 +65,40 @@ PAN, and Aadhaar-like values are rejected by the synthetic engine.
 
 See `SYNTHETIC_DATA.md`, `PRODUCTION_BOUNDARY.md`, `JUDGES_GUIDE.md`, and
 `SUBMISSION_SUMMARY.md`.
+
+## AI Summary and report export
+
+The report calls `/api/ai-report` with an allowlisted synthetic identifier only.
+The server loads its own fixture, waits for every record attribution (including
+failure states), then makes one additional summary call. The result is
+`{ summary: string, key_signal: string | null }`. Bedrock Chat Completions uses
+forced function arguments with a strict schema; the Responses API uses a strict
+JSON schema. Both paths validate returned fields before rendering them. The model
+receives no client-supplied evidence or reasoning. The summary describes findings;
+record attribution remains a separate, reviewable model result.
+
+The report and standalone attribution endpoints share the existing ten requests
+per IP per hour limiter. One report request includes its bounded fixture records
+and one summary call. The limiter is process-local, so it is a demo safeguard,
+not a distributed quota. Each provider call has a 15-second timeout. A summary
+failure preserves any successful record reasoning, and the report remains usable.
+Responses are not cached.
+
+Report sheets include a fictional subject contact, registration details, a filing
+calendar and counts, court coverage, entity context, limitations, and next check.
+Registry entries are not counted as court records. An explicitly unfiled return
+stays distinct from an unavailable one. Every subject, address, and record is a
+fictional demo fixture. The displayed searched date is the fixed fixture snapshot,
+not evidence of a live lookup.
+
+Download PDF and Print PDF use the same local A4 exporter, with embedded Onest
+and Instrument Serif fonts, complete per-record AI blocks, page numbering, and
+repeated explanations of the three finding labels. Print PDF opens the generated
+file in the browser's PDF viewer. Exporting before AI finishes preserves the
+pending state; it does not substitute a generated finding. Fonts are redistributed
+under the licenses in `public/fonts`.
+
+Release checks: `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build`,
+plus all-scenario desktop/mobile browsing and PDF content, font, and rendered-page
+checks. Deployment is restricted to the `parakh-hackathon-demo` Vercel project and
+`build.parakh.biz`.

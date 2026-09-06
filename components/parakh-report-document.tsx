@@ -1,593 +1,471 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
-import Link from 'next/link';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle2,
-  Download,
-  FileText,
-  Printer,
-} from 'lucide-react';
-
-import type { AiAttributionResult } from '@/lib/ai-attribution';
-import { AiAttributionReasoningCard } from '@/components/ai-attribution-reasoning-card';
-import {
-  createSyntheticReportPdf,
-  type ReportAiReasoningState,
-} from '@/lib/report-pdf';
+/* oxlint-disable no-html-link-for-pages -- Use the same hard-navigation path as DemoProductHeader for Vinext. */
+import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowLeft, Download, Printer } from 'lucide-react';
+import { AiAttributionReasoningCard } from './ai-attribution-reasoning-card';
+import { AiSummaryCard } from './ai-summary-card';
+import { DemoProductHeader } from './demo-product-header';
 import type { SyntheticReport } from '@/lib/synthetic-engine';
 import { SCENARIOS } from '@/lib/synthetic-engine';
-import { cn } from '@/lib/utils';
-import { DemoProductHeader } from '@/components/demo-product-header';
+import type {
+  ReportAiReasoningState,
+  ReportAiSummaryState,
+  ReportAiResponse,
+} from '@/lib/report-ai-state';
+import {
+  EVIDENCE_SOURCE,
+  FICTION_NOTICE,
+  FILING_LABELS,
+  filingStatus,
+  fixtureMatchGrade,
+  LABEL_GUIDE,
+  nextCheck,
+  REPORT_DISCLAIMER,
+  reportSections,
+} from '@/lib/report-layout';
+import type { SyntheticLabel } from '@/lib/synthetic-fixtures';
 
-const disclosure =
-  'This hackathon demo uses synthetic data only. It does not access live government systems, private records, real GSTINs, PANs, Aadhaar numbers, OTPs, payments, or production Parakh data.';
-const legalDisclaimer =
-  'CICRA 2005 note: This synthetic demonstration is not a credit information report, legal opinion, or automated credit decision.';
-
-function badgeClass(label: 'FLAG' | 'CLEAR' | 'NOTE') {
-  if (label === 'FLAG') return 'border-[#e8b7bd] bg-[#fff3f4] text-[#a33f4a]';
-  if (label === 'CLEAR') return 'border-[#c4dfd0] bg-[#eff9f3] text-[#2d6a48]';
-  return 'border-[#eadbc8] bg-[#fff8ed] text-[#916022]';
-}
-
-function isAiAttributionResult(value: unknown): value is AiAttributionResult {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return false;
-  }
-  const candidate = value as Record<string, unknown>;
+function Badge({ label }: { label: SyntheticLabel }) {
   return (
-    (candidate.decision === 'ATTRIBUTED' ||
-      candidate.decision === 'NOT_ATTRIBUTED' ||
-      candidate.decision === 'UNCERTAIN') &&
-    (candidate.confidence === 'High' ||
-      candidate.confidence === 'Medium' ||
-      candidate.confidence === 'Low') &&
-    typeof candidate.justification === 'string' &&
-    candidate.justification.length > 0
+    <span className={`report-badge report-badge-${label.toLowerCase()}`}>
+      {label}
+    </span>
   );
 }
-
-function aiStateForRecord(
-  reasoning: Record<string, ReportAiReasoningState>,
-  recordId: string,
-  fixtureSignal: 'FLAG' | 'CLEAR' | 'NOTE',
-) {
-  return (
-    reasoning[recordId] ?? {
-      status: 'fallback' as const,
-      fixtureSignal,
-    }
-  );
-}
-
-function PrimaryObservation({
+function Section({
+  title,
   label,
-  title,
-  detail,
-}: {
-  label: 'FLAG' | 'CLEAR' | 'NOTE';
-  title: string;
-  detail: string;
-}) {
-  return (
-    <div className="grid gap-2 border-t border-[#f0e7ee] py-4 text-sm first:border-t-0 sm:grid-cols-[92px_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
-      <div className="font-semibold text-[#8b7c84]">{title}</div>
-      <div className="font-medium leading-6 text-[#201b1e]">{detail}</div>
-      <span
-        className={cn(
-          'rounded-full border px-3 py-1 text-xs font-semibold',
-          badgeClass(label),
-        )}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function SectionCard({
-  title,
-  kicker,
   children,
 }: {
   title: string;
-  kicker: string;
+  label?: SyntheticLabel;
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[26px] bg-white p-5 shadow-[0_20px_70px_rgba(42,24,31,0.08)] sm:p-7">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="grid size-9 place-items-center rounded-full bg-[#7a336f] text-white">
-          <FileText className="size-4" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold uppercase text-[#9b8793]">
-            {kicker}
-          </p>
-          <h2 className="text-2xl font-semibold text-[#201b1e]">{title}</h2>
-        </div>
+    <section className="report-section">
+      <div className="report-section-heading">
+        <h2>{title}</h2>
+        {label && <Badge label={label} />}
       </div>
       {children}
     </section>
   );
 }
-
-function openScenario(identifier: string) {
-  window.location.href = `/report/${encodeURIComponent(identifier)}`;
+function Fact({ name, value }: { name: string; value: string }) {
+  return (
+    <div>
+      <dt>{name}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+function Sheet({
+  report,
+  page,
+  total,
+  children,
+}: {
+  report: SyntheticReport;
+  page: number;
+  total: number;
+  children: ReactNode;
+}) {
+  return (
+    <article className="report-sheet">
+      <header className="report-page-header">
+        <div>
+          <strong>Parakh</strong>
+          <span>Synthetic due-diligence report</span>
+        </div>
+        <div>
+          <span>REF {report.reportId}</span>
+          <span>
+            {report.generatedAt} · Page {page} of {total}
+          </span>
+        </div>
+      </header>
+      <div className="report-sheet-content">{children}</div>
+      <footer className="report-page-footer">
+        <p>{LABEL_GUIDE}</p>
+        <p>
+          <strong>{REPORT_DISCLAIMER}</strong>
+        </p>
+        <p>{FICTION_NOTICE}</p>
+      </footer>
+    </article>
+  );
 }
 
 export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
   const [reasoning, setReasoning] = useState<
     Record<string, ReportAiReasoningState>
-  >({});
+  >(() =>
+    Object.fromEntries(
+      report.publicRecords.map((record) => [record.id, { status: 'loading' }]),
+    ),
+  );
+  const [summary, setSummary] = useState<ReportAiSummaryState>({
+    status: 'loading',
+  });
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const sections = reportSections(report);
+  const pages = 2 + report.publicRecords.length;
 
   useEffect(() => {
-    let cancelled = false;
-    const records = report.publicRecords;
-    if (!records.length) return undefined;
-
-    setReasoning(
-      Object.fromEntries(
-        records.map((record) => [record.id, { status: 'loading' }]),
-      ),
-    );
-
-    void Promise.all(
-      records.map(async (record) => {
-        try {
-          const response = await fetch('/api/ai-attribution', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              identifier: report.searchedIdentifier,
-              recordId: record.id,
-            }),
-          });
-          if (!response.ok) throw new Error('AI attribution unavailable');
-          const value: unknown = await response.json();
-          if (!isAiAttributionResult(value)) {
-            throw new Error('Invalid AI attribution response');
-          }
-          return [record.id, { status: 'success', result: value }] as const;
-        } catch {
-          return [
-            record.id,
-            { status: 'fallback', fixtureSignal: record.signal },
-          ] as const;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 40_000);
+    let disposed = false;
+    void (async () => {
+      try {
+        const response = await fetch('/api/ai-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: report.searchedIdentifier }),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error('AI report unavailable');
+        const value = (await response.json()) as ReportAiResponse;
+        if (
+          !value ||
+          !value.reasoning ||
+          !['success', 'fallback'].includes(value.summary?.status)
+        )
+          throw new Error('Invalid AI report');
+        if (!disposed) {
+          setReasoning(value.reasoning);
+          setSummary(value.summary);
         }
-      }),
-    ).then((entries) => {
-      if (!cancelled) setReasoning(Object.fromEntries(entries));
-    });
-
+      } catch {
+        if (!disposed) {
+          setReasoning(
+            Object.fromEntries(
+              report.publicRecords.map((record) => [
+                record.id,
+                { status: 'fallback', fixtureSignal: record.signal },
+              ]),
+            ),
+          );
+          setSummary({ status: 'fallback' });
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
     return () => {
-      cancelled = true;
+      disposed = true;
+      controller.abort();
+      clearTimeout(timeout);
     };
   }, [report.publicRecords, report.searchedIdentifier]);
 
-  const delayed = report.filingPattern.rows.filter(
-    (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
-  ).length;
-  const flagCount = report.observations.filter(
-    (observation) => observation.label === 'FLAG',
-  ).length;
-  const noteCount = report.observations.filter(
-    (observation) => observation.label === 'NOTE',
-  ).length;
-  const identityObservation =
-    report.observations.find((item) => item.title.includes('Name')) ??
-    report.observations[0];
-  const filingObservation =
-    report.observations.find((item) => item.title.includes('filing')) ??
-    report.observations[1] ??
-    report.observations[0];
-  const courtObservation =
-    report.observations.find((item) => item.title.includes('Public-record')) ??
-    report.observations.find((item) => item.title.includes('alias')) ??
-    report.observations[report.observations.length - 1];
-
-  async function downloadPdf() {
+  async function exportPdf(print: boolean) {
     setPdfBusy(true);
     setPdfError(null);
+    // Open synchronously to retain the user's browser gesture for Print.
+    const printWindow = print ? window.open('', '_blank') : null;
     try {
-      const bytes = await createSyntheticReportPdf(report, reasoning);
+      const { createSyntheticReportPdf } = await import('@/lib/report-pdf');
+      const bytes = await createSyntheticReportPdf(report, reasoning, summary);
       const url = URL.createObjectURL(
-        new Blob([bytes], { type: 'application/pdf' }),
+        new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }),
       );
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${report.reportId.toLowerCase()}-synthetic-report.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
+      if (printWindow) printWindow.location.href = url;
+      else {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${report.reportId.toLowerCase()}-synthetic-report.pdf`;
+        link.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
-      setPdfError('PDF download is unavailable right now. Use Print to save a copy.');
+      printWindow?.close();
+      setPdfError('PDF preparation is unavailable. Please try again.');
     } finally {
       setPdfBusy(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
+    <main className="report-canvas">
       <DemoProductHeader
         hideWhenPrinting
         actions={
-          <div className="flex items-center gap-2">
+          <div className="report-actions">
             <button
               type="button"
-              onClick={() => window.print()}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-4 text-sm font-semibold text-white"
+              onClick={() => void exportPdf(true)}
+              disabled={pdfBusy}
             >
-              <Printer className="size-4" />
-              Print
+              <Printer size={16} />
+              Print PDF
             </button>
             <button
               type="button"
-              onClick={() => void downloadPdf()}
+              onClick={() => void exportPdf(false)}
               disabled={pdfBusy}
-              className="hidden min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[var(--parakh-plum)] sm:inline-flex"
+              className="report-download"
             >
-              <Download className="size-4" />
-              {pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
+              <Download size={16} />
+              {pdfBusy ? 'Preparing…' : 'Download PDF'}
             </button>
           </div>
         }
       />
-      {pdfError ? (
-        <p className="mx-auto max-w-6xl px-5 pt-3 text-right text-sm text-[#a33f4a] print:hidden" role="alert">
-          {pdfError}
-        </p>
-      ) : null}
-
-      <section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">
-        <div className="rounded-[32px] bg-[radial-gradient(circle_at_top,#fff_0%,#fbf2f7_42%,#f0e1ea_100%)] p-5 shadow-[0_30px_90px_rgba(42,24,31,0.08)] sm:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="report-workspace">
+        <nav
+          className="report-toolbar print:hidden"
+          aria-label="Report controls"
+        >
+          <a href="/">
+            <ArrowLeft size={16} />
+            Synthetic search
+          </a>
+          <label>
+            Demo scenario
+            <select
+              value={report.searchedIdentifier}
+              onChange={(event) => {
+                window.location.href = `/report/${encodeURIComponent(event.target.value)}`;
+              }}
+            >
+              {SCENARIOS.map((scenario) => (
+                <option key={scenario.identifier} value={scenario.identifier}>
+                  {scenario.shortName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </nav>
+        {pdfError && (
+          <p role="alert" className="report-error">
+            {pdfError}
+          </p>
+        )}
+        <Sheet report={report} page={1} total={pages}>
+          <AiSummaryCard state={summary} />
+          <section className="report-subject">
             <div>
-              <p className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#7a336f]">
-                Synthetic report
-              </p>
-              <h1 className="mt-5 text-4xl font-semibold leading-tight sm:text-5xl">
-                {report.business.tradeName}{' '}
-                <span className="font-serif italic text-[#7a336f]">record</span>
+              <p className="report-eyebrow">Subject · Entirely fictional</p>
+              <h1>
+                {report.business.tradeName} <em>record</em>
               </h1>
-              <p className="mt-4 text-base leading-7 text-[#675b63]">
-                This report mirrors the Parakh report journey, but every source
-                and business fact is synthetic.
+              <p>{report.business.legalName}</p>
+              <p className="report-caption">
+                {report.business.personName} · Fictional subject contact
               </p>
-              <dl className="mt-6 grid gap-3 text-sm">
-                <div className="rounded-[18px] bg-white/80 p-4">
-                  <dt className="font-semibold text-[#8b7c84]">
-                    Synthetic GSTIN
-                  </dt>
-                  <dd className="mt-1 font-semibold">
-                    {report.searchedIdentifier}
-                  </dd>
-                </div>
-                <div className="rounded-[18px] bg-white/80 p-4">
-                  <dt className="font-semibold text-[#8b7c84]">Report ID</dt>
-                  <dd className="mt-1 font-semibold">{report.reportId}</dd>
-                </div>
-              </dl>
             </div>
-
-            <div className="rounded-[28px] bg-white p-5 shadow-[0_18px_60px_rgba(42,24,31,0.1)]">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#f0e7ee] pb-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase text-[#9b8793]">
-                    GSTIN {report.searchedIdentifier} ·{' '}
-                    {report.business.registrationState}
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold">
-                    {report.business.legalName}
-                  </h2>
-                </div>
-                <span className="rounded-full border border-[#eadbc8] bg-[#fff8ed] px-3 py-1 text-xs font-semibold text-[#916022]">
-                  SPECIMEN
+            <dl className="report-subject-meta">
+              <Fact name="Prepared for" value="Demo viewer" />
+              <Fact name="Report number" value={report.reportId} />
+              <Fact
+                name="Searched date · fixture snapshot"
+                value={report.generatedAt}
+              />
+            </dl>
+          </section>
+          <dl className="report-key-facts">
+            <Fact
+              name="GSTIN · fictional marker"
+              value={report.searchedIdentifier}
+            />
+            <Fact
+              name="PAN-pattern · fictional"
+              value={report.business.syntheticPanPattern}
+            />
+            <Fact
+              name="State · demo"
+              value={report.business.registrationState}
+            />
+            <Fact name="Constitution" value={report.business.constitution} />
+          </dl>
+          <p className="report-address">
+            <strong>Registered address · fictional</strong>{' '}
+            {report.business.syntheticAddress}
+          </p>
+          <Section title="IDENTITY" label={sections.identity.label}>
+            <p>{sections.identity.detail}</p>
+          </Section>
+          <Section title="REGISTRATION" label={sections.registrationLabel}>
+            <dl className="report-inline-facts">
+              <Fact name="Status" value={report.business.registrationStatus} />
+              <Fact
+                name="Registered date · fictional"
+                value={report.business.registeredDate}
+              />
+            </dl>
+          </Section>
+          <Section title="GST RETURN FILING" label={sections.filingLabel}>
+            <p className="report-caption">
+              {sections.counts.periods} fixture periods · Each cell is one
+              return; no live filing lookup.
+            </p>
+            <div
+              className="report-filing-grid"
+              style={
+                {
+                  '--period-count': report.filingPattern.rows.length,
+                } as React.CSSProperties
+              }
+            >
+              <span className="report-grid-label">Return</span>
+              {report.filingPattern.rows.map((row) => (
+                <span key={row.period} className="report-month">
+                  {row.month}
                 </span>
-              </div>
-              <PrimaryObservation
-                title="IDENTITY"
-                label={identityObservation.label}
-                detail={identityObservation.title}
-              />
-              <PrimaryObservation
-                title="FILING"
-                label={filingObservation.label}
-                detail={filingObservation.title}
-              />
-              <PrimaryObservation
-                title="LITIGATION"
-                label={courtObservation.label}
-                detail={
-                  report.publicRecords.length
-                    ? `${report.publicRecords.length} synthetic public-record signal(s) found`
-                    : 'No synthetic public-record signal in this fixture'
-                }
-              />
-              <PrimaryObservation
-                title="LIMITS"
-                label="NOTE"
-                detail={`${report.cannotFind.length} unavailable source area(s) disclosed`}
-              />
-              <p className="mt-4 rounded-[18px] bg-[#f8f1f5] p-4 text-sm leading-6 text-[#675b63]">
-                Could not find: {report.cannotFind.join(', ')}.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-[24px] bg-[#201b1e] p-5 text-sm leading-6 text-white sm:p-6">
-          <strong>Synthetic-data disclosure:</strong> {disclosure}
-          <br />
-          <strong>{legalDisclaimer}</strong>
-        </div>
-
-        <div className="mt-8 grid gap-5 lg:grid-cols-2">
-          <SectionCard
-            title="Identity and structure"
-            kicker="Who you are dealing with"
-          >
-            <div className="grid gap-3 text-sm sm:grid-cols-2">
-              {[
-                ['Legal name', report.business.legalName],
-                ['Trade name', report.business.tradeName],
-                ['Constitution', report.business.constitution],
-                ['Status', report.business.registrationStatus],
-                ['Address', report.business.syntheticAddress],
-                ['Source', report.business.provenance],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-[18px] bg-[#fbf8f5] p-4">
-                  <div className="font-semibold text-[#8b7c84]">{label}</div>
-                  <div className="mt-1 leading-6">{value}</div>
-                </div>
               ))}
-            </div>
-          </SectionCard>
-
-          <SectionCard title="Filing pattern" kicker="Recent return behaviour">
-            <div className="mb-4 grid grid-cols-3 gap-3">
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4">
-                <div className="text-2xl font-semibold">
-                  {report.filingPattern.rows.length}
-                </div>
-                <div className="mt-1 text-xs text-[#7f7279]">periods read</div>
-              </div>
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4">
-                <div className="text-2xl font-semibold">{delayed}</div>
-                <div className="mt-1 text-xs text-[#7f7279]">follow-ups</div>
-              </div>
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4">
-                <div className="text-2xl font-semibold">
-                  {report.filingPattern.confidence}
-                </div>
-                <div className="mt-1 text-xs text-[#7f7279]">confidence</div>
-              </div>
-            </div>
-            <div className="overflow-x-auto rounded-[18px] border border-[#f0e7ee]">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-[#fbf8f5] text-[#675b63]">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Period</th>
-                    <th className="px-4 py-3 font-semibold">GSTR-1</th>
-                    <th className="px-4 py-3 font-semibold">GSTR-3B</th>
-                    <th className="px-4 py-3 font-semibold">Filed on</th>
-                  </tr>
-                </thead>
-                <tbody>
+              {(['gstr1', 'gstr3b'] as const).map((key) => (
+                <div className="report-grid-row" key={key}>
+                  <span className="report-grid-label">
+                    {key === 'gstr1' ? 'GSTR-1' : 'GSTR-3B'}
+                  </span>
                   {report.filingPattern.rows.map((row) => (
-                    <tr key={row.period} className="border-t border-[#f0e7ee]">
-                      <td className="px-4 py-3 font-medium">{row.month}</td>
-                      <td className="px-4 py-3 capitalize">{row.gstr1}</td>
-                      <td className="px-4 py-3 capitalize">{row.gstr3b}</td>
-                      <td className="px-4 py-3">{row.filedOn}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            title="Public-record signals"
-            kicker="Court and record examples"
-          >
-            <div className="space-y-3">
-              {report.publicRecords.length ? (
-                report.publicRecords.map((record) => (
-                  <div
-                    key={record.id}
-                    className="rounded-[18px] bg-[#fbf8f5] p-4"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={cn(
-                          'rounded-full border px-3 py-1 text-xs font-semibold',
-                          badgeClass(record.signal),
-                        )}
-                      >
-                        {record.signal}
-                      </span>
-                      <span className="text-sm font-semibold">{record.id}</span>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-[#675b63]">
-                      {record.summary}
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-[#8b7c84]">
-                      {record.caseReference} · {record.courtName}
-                      <br />
-                      Parties: {record.parties.join(' · ')} · {record.partySide}
-                      <br />
-                      Match basis: {record.matchBasis}
-                    </p>
-                    <p className="mt-2 text-xs text-[#8b7c84]">
-                      {record.date} · Confidence {record.confidence} ·{' '}
-                      {record.provenance}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-[18px] bg-[#fbf8f5] p-4 text-sm leading-6 text-[#675b63]">
-                  No synthetic public-record signal is present in this fixture.
-                </div>
-              )}
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            title="AI Attribution Reasoning"
-            kicker="Runtime model review · synthetic evidence"
-          >
-            <div className="space-y-3">
-              {report.publicRecords.length ? (
-                report.publicRecords.map((record) => {
-                  const state = aiStateForRecord(
-                    reasoning,
-                    record.id,
-                    record.signal,
-                  );
-                  return (
-                    <AiAttributionReasoningCard
-                      key={record.id}
-                      recordId={record.id}
-                      fixtureSignal={record.signal}
-                      state={state}
-                    />
-                  );
-                })
-              ) : (
-                <div className="rounded-[18px] bg-[#fbf8f5] p-4 text-sm leading-6 text-[#675b63]">
-                  No synthetic public-record signal is present, so there is no
-                  candidate record to attribute.
-                </div>
-              )}
-            </div>
-          </SectionCard>
-
-          <SectionCard title="Observations" kicker="Evidence, not rating">
-            <div className="space-y-3">
-              {report.observations.map((item) => (
-                <div
-                  key={`${item.label}-${item.title}`}
-                  className="rounded-[18px] bg-[#fbf8f5] p-4"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={cn(
-                        'rounded-full border px-3 py-1 text-xs font-semibold',
-                        badgeClass(item.label),
-                      )}
+                      key={row.period}
+                      className={`report-filing-cell filing-${filingStatus(row[key])}`}
+                      title={`${row.month} ${key === 'gstr1' ? 'GSTR-1' : 'GSTR-3B'}: ${FILING_LABELS[filingStatus(row[key])]}`}
                     >
-                      {item.label}
+                      {FILING_LABELS[filingStatus(row[key])]}
                     </span>
-                    <span className="font-semibold">{item.title}</span>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-[#675b63]">
-                    {item.detail}
-                  </p>
-                  <p className="mt-2 text-xs text-[#8b7c84]">
-                    Confidence {item.confidence} · {item.attribution}
-                  </p>
+                  ))}
                 </div>
               ))}
             </div>
-          </SectionCard>
-        </div>
-
-        <div className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-          <SectionCard title="What we could not find" kicker="Limits">
-            <ul className="space-y-2">
+            <table className="report-counts">
+              <caption>Summary counts · individual returns</caption>
+              <thead>
+                <tr>
+                  <th>Return</th>
+                  <th>On time</th>
+                  <th>Late</th>
+                  <th>Not filed</th>
+                  <th>Unavailable</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(['gstr1', 'gstr3b'] as const).map((key) => (
+                  <tr key={key}>
+                    <th>{key === 'gstr1' ? 'GSTR-1' : 'GSTR-3B'}</th>
+                    <td>{sections.counts[key].onTime}</td>
+                    <td>{sections.counts[key].late}</td>
+                    <td>{sections.counts[key].missing}</td>
+                    <td>{sections.counts[key].unavailable}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="report-caption">
+              Not filed appears only for an explicit fixture marker. Unavailable
+              means the fixture supplies no usable filing evidence.
+            </p>
+          </Section>
+        </Sheet>
+        <Sheet report={report} page={2} total={pages}>
+          <div className="report-chapter-title">
+            <p className="report-eyebrow">Scope and follow-up</p>
+            <h2>
+              Read with <em>context</em>
+            </h2>
+            <p>{report.business.legalName}</p>
+          </div>
+          <Section title="COURT RECORDS" label={sections.courtLabel}>
+            <p>{sections.courtDetail}</p>
+            <p className="report-caption">
+              Source: {EVIDENCE_SOURCE} · Synthetic/demo records only.
+            </p>
+            {sections.registryRecords.length > 0 && (
+              <p className="report-caption">
+                {sections.registryRecords.length} separate registry candidate(s)
+                appear in the evidence details. These are not court records.
+              </p>
+            )}
+          </Section>
+          <Section title="ENTITY CONTEXT" label="NOTE">
+            <p>{report.business.context}</p>
+          </Section>
+          <Section title="What this check could not find">
+            <ul className="report-limitations">
               {report.cannotFind.map((item) => (
-                <li
-                  key={item}
-                  className="flex gap-2 rounded-[16px] bg-[#fbf8f5] p-3 text-sm"
-                >
-                  <AlertTriangle className="mt-0.5 size-4 text-[#916022]" />
-                  <span>{item}</span>
-                </li>
+                <li key={item}>{item}</li>
               ))}
             </ul>
-          </SectionCard>
-
-          <SectionCard
-            title="Try another synthetic GSTIN"
-            kicker="Demo scenarios"
-          >
-            <div className="grid gap-2">
-              {SCENARIOS.map((scenario) => (
-                <button
-                  key={scenario.identifier}
-                  type="button"
-                  onClick={() => openScenario(scenario.identifier)}
-                  className={cn(
-                    'rounded-[18px] border p-3 text-left text-sm transition hover:bg-[#fbf8f5]',
-                    scenario.identifier === report.searchedIdentifier
-                      ? 'border-[#7a336f] bg-[#fbf2f7]'
-                      : 'border-[#f0e7ee] bg-white',
-                  )}
-                >
-                  <span className="font-semibold">{scenario.identifier}</span>
-                  <span className="mt-1 block text-[#7f7279]">
-                    {scenario.shortName}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </SectionCard>
-        </div>
-
-        <section className="mt-8 rounded-[26px] bg-white p-6 shadow-[0_20px_70px_rgba(42,24,31,0.08)]">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="size-5 text-[#2d6a48]" />
-            <h2 className="text-2xl font-semibold">
-              How this report was generated
+            <p className="report-caption">
+              No live systems were queried. An absent fixture record does not
+              establish an absence of real-world records.
+            </p>
+          </Section>
+          <section className="report-next-check">
+            <p className="report-eyebrow">Next check</p>
+            <h2>
+              The next <em>document</em>
             </h2>
-          </div>
-          <ol className="mt-4 grid gap-2 text-sm leading-6 text-[#675b63] sm:grid-cols-2">
-            {report.generationSteps.map((step) => (
-              <li key={step} className="rounded-[16px] bg-[#fbf8f5] p-3">
-                {step}
-              </li>
+            <p>{nextCheck(report)}</p>
+            <p className="report-caption">
+              Suggested evidence-gathering step for this fictional example.
+            </p>
+          </section>
+          <p className="report-boundary">{report.syntheticDisclosure}</p>
+        </Sheet>
+        {Array.from({ length: report.publicRecords.length }, (_, index) => (
+          <Sheet key={index} report={report} page={index + 3} total={pages}>
+            <div className="report-chapter-title">
+              <p className="report-eyebrow">Synthetic evidence details</p>
+              <h2>
+                Record by <em>record</em>
+              </h2>
+              <p>
+                {EVIDENCE_SOURCE} · Fictional candidates, with attribution shown
+                separately.
+              </p>
+            </div>
+            {report.publicRecords.slice(index, index + 1).map((record) => (
+              <section key={record.id} className="report-record">
+                <div className="report-section-heading">
+                  <h3>{record.caseReference}</h3>
+                  <Badge label={record.signal} />
+                </div>
+                <p>{record.summary}</p>
+                <dl className="report-record-facts">
+                  <Fact name="Role" value={record.role} />
+                  <Fact
+                    name="Case / record type"
+                    value={
+                      record.category === 'registry'
+                        ? 'Registry entry (not a court case)'
+                        : record.category === 'supplier-dispute'
+                          ? 'Supplier dispute'
+                          : record.category
+                    }
+                  />
+                  <Fact
+                    name="Fixture match grade"
+                    value={fixtureMatchGrade(record)}
+                  />
+                  <Fact
+                    name="Matched entity / candidate"
+                    value={record.matchedEntity}
+                  />
+                  <Fact name="Search basis" value={record.matchBasis} />
+                  <Fact name="Proceeding type" value={record.proceedingType} />
+                  <Fact name="Filed year" value={record.filedYear} />
+                  <Fact name="Court / registry" value={record.courtName} />
+                </dl>
+                <p className="report-identity-evidence">
+                  <strong>Identity evidence</strong> {record.identityEvidence}
+                </p>
+                <p className="report-caption">
+                  Source: {EVIDENCE_SOURCE} · {record.provenance}
+                </p>
+                <AiAttributionReasoningCard
+                  recordId={record.id}
+                  fixtureSignal={record.signal}
+                  state={reasoning[record.id] ?? { status: 'loading' }}
+                />
+              </section>
             ))}
-          </ol>
-          <p className="mt-5 text-sm leading-6 text-[#675b63]">
-            Production use would require authorized APIs, consent-aware
-            handling, audit logs, rate limits, data provenance, retention
-            limits, security controls, and human-readable limitations.
-          </p>
-        </section>
-
-        <div className="mt-8 flex flex-wrap gap-3 print:hidden">
-          <Link
-            href="/"
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#201b1e]"
-          >
-            <ArrowLeft className="size-4" />
-            Back to search
-          </Link>
-          <button
-            type="button"
-            onClick={() => void downloadPdf()}
-            disabled={pdfBusy}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7a336f] px-5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            <Download className="size-4" />
-            {pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#201b1e] px-5 text-sm font-semibold text-white"
-          >
-            <Printer className="size-4" />
-            Print report
-          </button>
-        </div>
-      </section>
+          </Sheet>
+        ))}
+      </div>
     </main>
   );
 }

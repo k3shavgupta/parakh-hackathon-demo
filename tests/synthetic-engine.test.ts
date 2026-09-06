@@ -19,7 +19,7 @@ describe('synthetic v4 report engine', () => {
     const report = buildSyntheticReport('SYN-GSTIN-DELAY-002');
 
     expect(report.business.legalName).toBe(
-      'Navkaar Metro Components Private Limited',
+      'Navkaar Moonloom Demo Components Private Limited',
     );
     expect(report.observations.some((item) => item.label === 'FLAG')).toBe(
       true,
@@ -63,16 +63,16 @@ describe('synthetic v4 report engine', () => {
       'SYN-GSTIN-CLEAR-001',
     );
     expect(
-      resolveSyntheticSearch('Setu Freight Corridors Private Limited')
+      resolveSyntheticSearch('Setu Starling Demo Corridors Private Limited')
         ?.identifier,
     ).toBe('SYN-GSTIN-COURT-004');
-    expect(resolveSyntheticSearch('Navkar Metro')?.identifier).toBe(
+    expect(resolveSyntheticSearch('Navkar Moonloom Demo')?.identifier).toBe(
       'SYN-GSTIN-DELAY-002',
     );
-    expect(resolveSyntheticSearch('Dakshin Alloy Traders')?.identifier).toBe(
+    expect(resolveSyntheticSearch('Dakshin Papercloud Demo Traders')?.identifier).toBe(
       'SYN-GSTIN-MISMATCH-003',
     );
-    expect(resolveSyntheticSearch('Prism Rual Tools')?.identifier).toBe(
+    expect(resolveSyntheticSearch('Prism Meadowglas Demo Tools')?.identifier).toBe(
       'SYN-GSTIN-PARTIAL-005',
     );
   });
@@ -96,8 +96,8 @@ describe('synthetic v4 report engine', () => {
     const scenario = getSyntheticScenario('SYN-GSTIN-COURT-004');
     expect(scenario?.publicRecords).toHaveLength(2);
     expect(scenario?.publicRecords[0]).toMatchObject({
-      caseReference: 'SYNTHETIC-CASE-DEMO-014',
-      courtName: 'Synthetic Demo Court — Example Bench',
+      caseReference: 'DEMO-CASE-0014',
+      courtName: 'Synthetic Civil Court, Demo Division',
       partySide: 'named-party',
       matchBasis: 'Exact synthetic legal-name match',
     });

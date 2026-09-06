@@ -54,17 +54,19 @@ describe('AI attribution API', () => {
 
   it('calls the provider through the real route when a server key is configured', async () => {
     process.env.OPENAI_API_KEY = 'route-test-key';
-    globalThis.fetch = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          output_text: JSON.stringify({
-            decision: 'ATTRIBUTED',
-            confidence: 'High',
-            justification: 'The synthetic record names the exact fixture entity.',
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            output_text: JSON.stringify({
+              decision: 'ATTRIBUTED',
+              confidence: 'High',
+              justification:
+                'The synthetic record names the exact fixture entity.',
+            }),
           }),
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
     ) as typeof fetch;
 
     const response = await POST(
@@ -91,17 +93,18 @@ describe('AI attribution API', () => {
 
   it('does not cache attribution responses between repeated requests', async () => {
     process.env.OPENAI_API_KEY = 'route-test-key';
-    globalThis.fetch = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          output_text: JSON.stringify({
-            decision: 'UNCERTAIN',
-            confidence: 'Medium',
-            justification: 'The mocked provider response is fresh.',
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            output_text: JSON.stringify({
+              decision: 'UNCERTAIN',
+              confidence: 'Medium',
+              justification: 'The mocked provider response is fresh.',
+            }),
           }),
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
     ) as typeof fetch;
 
     const request = (ip: string) =>
@@ -130,23 +133,33 @@ describe('AI attribution API', () => {
       'https://bedrock-mantle.us-east-1.api.aws/openai/v1';
     process.env.OPENAI_MODEL = 'openai.gpt-oss-20b';
     process.env.OPENAI_API_MODE = 'chat-completions';
-    globalThis.fetch = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                content: JSON.stringify({
-                  decision: 'UNCERTAIN',
-                  confidence: 'Medium',
-                  justification: 'The mocked Bedrock response is ambiguous.',
-                }),
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  tool_calls: [
+                    {
+                      type: 'function',
+                      function: {
+                        name: 'attribute_record',
+                        arguments: JSON.stringify({
+                          decision: 'UNCERTAIN',
+                          confidence: 'Medium',
+                          justification:
+                            'The mocked Bedrock response is ambiguous.',
+                        }),
+                      },
+                    },
+                  ],
+                },
               },
-            },
-          ],
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
     ) as typeof fetch;
 
     const response = await POST(

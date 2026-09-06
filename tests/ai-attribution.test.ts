@@ -16,11 +16,13 @@ describe('AI attribution boundary', () => {
 
     const prompt = buildAttributionPrompt(scenario!, record!);
 
-    expect(prompt).toContain('Setu Freight Corridors Private Limited');
-    expect(prompt).toContain('SYNTHETIC-CASE-DEMO-014');
-    expect(prompt).toContain('Synthetic Demo Court');
+    expect(prompt).toContain('Setu Starling Demo Corridors Private Limited');
+    expect(prompt).toContain('DEMO-CASE-0014');
+    expect(prompt).toContain('Synthetic Civil Court, Demo Division');
     expect(prompt).toContain('Exact synthetic legal-name match');
-    expect(prompt).toContain('No real GSTIN, PAN, court system, or public record');
+    expect(prompt).toContain(
+      'No real GSTIN, PAN, court system, or public record',
+    );
   });
 
   it('accepts only the constrained attribution response shape', () => {
@@ -78,10 +80,78 @@ describe('AI attribution boundary', () => {
       confidence: 'High',
       justification: 'The named party is a different synthetic entity.',
     });
+
+    expect(
+      parseAiAttributionResponse(
+        JSON.stringify({
+          decision: 'ATTRIBUTED',
+          confidence: 'High',
+          factors: [
+            { label: 'Name similarity', verdict: 'High' },
+            { label: 'PAN pattern', verdict: 'Match' },
+          ],
+          justification: 'Exact legal name and matching PAN pattern.',
+        }),
+      ),
+    ).toEqual({
+      decision: 'ATTRIBUTED',
+      confidence: 'High',
+      factors: [
+        { label: 'Name similarity', verdict: 'High' },
+        { label: 'PAN pattern', verdict: 'Match' },
+      ],
+      justification: 'Exact legal name and matching PAN pattern.',
+    });
+
+    // Rejects invalid factor label
+    expect(
+      parseAiAttributionResponse(
+        JSON.stringify({
+          decision: 'ATTRIBUTED',
+          confidence: 'High',
+          factors: [
+            { label: 'Arbitrary factor', verdict: 'High' },
+          ],
+          justification: 'Should fail because of unknown label.',
+        }),
+      ),
+    ).toBeNull();
+
+    // Rejects invalid factor verdict
+    expect(
+      parseAiAttributionResponse(
+        JSON.stringify({
+          decision: 'ATTRIBUTED',
+          confidence: 'High',
+          factors: [
+            { label: 'Name similarity', verdict: 'SuperHigh' },
+          ],
+          justification: 'Should fail because of unknown verdict.',
+        }),
+      ),
+    ).toBeNull();
+
+    // Rejects duplicate factor labels
+    expect(
+      parseAiAttributionResponse(
+        JSON.stringify({
+          decision: 'ATTRIBUTED',
+          confidence: 'High',
+          factors: [
+            { label: 'Name similarity', verdict: 'High' },
+            { label: 'Name similarity', verdict: 'Low' },
+          ],
+          justification: 'Should fail because of duplicate label.',
+        }),
+      ),
+    ).toBeNull();
   });
 
   it('allows ten calls per IP in a rolling hour and blocks the eleventh', () => {
-    const limiter = createIpRateLimiter({ limit: 10, windowMs: 60 * 60 * 1000 });
+    const limiter = createIpRateLimiter({
+      limit: 10,
+      windowMs: 60 * 60 * 1000,
+    });
     const start = 1_000_000;
 
     for (let index = 0; index < 10; index += 1) {
@@ -147,7 +217,8 @@ describe('AI attribution boundary', () => {
           output_text: JSON.stringify({
             decision: 'ATTRIBUTED',
             confidence: 'High',
-            justification: 'The synthetic legal name exactly matches the named party.',
+            justification:
+              'The synthetic legal name exactly matches the named party.',
           }),
         }),
         { status: 200 },
@@ -176,19 +247,31 @@ describe('AI attribution boundary', () => {
         typeof init?.body === 'string' ? init.body : '',
       );
       expect(requestBody.model).toBe('openai.gpt-oss-20b');
-      expect(requestBody.response_format).toEqual({ type: 'json_object' });
+      expect(requestBody.tool_choice).toEqual({
+        type: 'function',
+        function: { name: 'attribute_record' },
+      });
       expect(requestBody.reasoning_effort).toBe('low');
-      expect(requestBody.max_tokens).toBe(512);
+      expect(requestBody.max_tokens).toBeGreaterThanOrEqual(1024);
       return new Response(
         JSON.stringify({
           choices: [
             {
               message: {
-                content: JSON.stringify({
-                  decision: 'NOT_ATTRIBUTED',
-                  confidence: 'High',
-                  justification: 'The synthetic party is a different entity.',
-                }),
+                tool_calls: [
+                  {
+                    type: 'function',
+                    function: {
+                      name: 'attribute_record',
+                      arguments: JSON.stringify({
+                        decision: 'NOT_ATTRIBUTED',
+                        confidence: 'High',
+                        justification:
+                          'The synthetic party is a different entity.',
+                      }),
+                    },
+                  },
+                ],
               },
             },
           ],
@@ -206,7 +289,64 @@ describe('AI attribution boundary', () => {
         timeoutMs: 1000,
         fetchImpl,
       }),
-    ).resolves.toMatchObject({ decision: 'NOT_ATTRIBUTED', confidence: 'High' });
+    ).resolves.toMatchObject({
+      decision: 'NOT_ATTRIBUTED',
+      confidence: 'High',
+    });
+  });
+
+  it('returns structured reasoning factors through Chat Completions tool calling', async () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-CLEAR-001');
+    const record = scenario?.publicRecords[0];
+    const fetchImpl: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                tool_calls: [
+                  {
+                    type: 'function',
+                    function: {
+                      name: 'attribute_record',
+                      arguments: JSON.stringify({
+                        decision: 'ATTRIBUTED',
+                        confidence: 'High',
+                        factors: [
+                          { label: 'Name similarity', verdict: 'High' },
+                          { label: 'PAN pattern', verdict: 'Match' },
+                        ],
+                        justification:
+                          'Exact match on legal entity and verified synthetic PAN pattern.',
+                      }),
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+
+    const result = await requestAiAttribution(scenario!, record!, {
+      apiKey: 'bedrock-test-key',
+      model: 'openai.gpt-oss-20b',
+      apiMode: 'chat-completions',
+      timeoutMs: 1000,
+      fetchImpl,
+    });
+
+    expect(result).toEqual({
+      decision: 'ATTRIBUTED',
+      confidence: 'High',
+      factors: [
+        { label: 'Name similarity', verdict: 'High' },
+        { label: 'PAN pattern', verdict: 'Match' },
+      ],
+      justification:
+        'Exact match on legal entity and verified synthetic PAN pattern.',
+    });
   });
 
   it('retains a sanitized provider error detail for server-side diagnostics', async () => {

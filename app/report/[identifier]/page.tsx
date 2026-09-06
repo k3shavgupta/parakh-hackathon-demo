@@ -39,5 +39,5 @@ export default async function SyntheticReportPage({
     );
   }
 
-  return <ParakhReportDocument report={report} />;
+  return <ParakhReportDocument key={report.searchedIdentifier} report={report} />;
 }
