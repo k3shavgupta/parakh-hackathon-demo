@@ -26,7 +26,11 @@ function requestIp(request: Request) {
 }
 
 function serverEnv(
-  name: 'OPENAI_API_KEY' | 'OPENAI_MODEL' | 'OPENAI_BASE_URL',
+  name:
+    | 'OPENAI_API_KEY'
+    | 'OPENAI_MODEL'
+    | 'OPENAI_BASE_URL'
+    | 'OPENAI_API_MODE',
 ) {
   const processValue =
     typeof process === 'undefined' ? undefined : process.env[name];
@@ -93,6 +97,10 @@ export async function POST(request: Request) {
       apiKey,
       model: serverEnv('OPENAI_MODEL') ?? 'gpt-4o-mini',
       baseUrl: serverEnv('OPENAI_BASE_URL'),
+      apiMode:
+        serverEnv('OPENAI_API_MODE') === 'chat-completions'
+          ? 'chat-completions'
+          : 'responses',
       timeoutMs: 15_000,
     });
     return json(result);

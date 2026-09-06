@@ -33,14 +33,19 @@ OPENAI_API_KEY=your-local-key
 OPENAI_MODEL=gpt-4o-mini
 # Optional Bedrock-compatible endpoint:
 # OPENAI_BASE_URL=https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1
+# OPENAI_MODEL=openai.gpt-oss-20b-1:0
+# OPENAI_API_MODE=chat-completions
 ```
 
 The key is read only by `app/api/ai-attribution/route.ts`; it is never included
-in browser code or sent back to the client. To use Amazon Bedrock's
-OpenAI-compatible Responses API, set OPENAI_API_KEY to a Bedrock API key,
-OPENAI_BASE_URL to the Bedrock endpoint for the selected region, and
-OPENAI_MODEL to a model ID enabled in that Bedrock region. Without a key, the
-report remains usable and explicitly shows the fixture-based grade fallback.
+in browser code or sent back to the client. To use Amazon Bedrock, set
+OPENAI_API_KEY to a Bedrock API key, OPENAI_BASE_URL to the endpoint for the
+selected region, OPENAI_MODEL to a model ID enabled in that Bedrock region,
+and OPENAI_API_MODE to the protocol supported by that model (`responses` or
+`chat-completions`). The current hackathon Bedrock configuration uses the
+runtime endpoint with `openai.gpt-oss-20b-1:0` and `chat-completions`. Without
+a key, the report remains usable and explicitly shows the fixture-based grade
+fallback.
 
 The Evidence Lab is available at `/synthetic-data`.
 

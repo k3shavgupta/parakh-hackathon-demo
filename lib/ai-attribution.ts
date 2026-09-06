@@ -86,40 +86,79 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function removeReasoningWrapper(raw: string) {
+  const reasoningEnd = raw.lastIndexOf('</reasoning>');
+  return reasoningEnd >= 0
+    ? raw.slice(reasoningEnd + '</reasoning>'.length).trim()
+    : raw.trim();
+}
+
 export function parseAiAttributionResponse(
   raw: string,
 ): AiAttributionResult | null {
-  let parsed: unknown;
+  const candidate = removeReasoningWrapper(raw);
+  const parsedCandidates: unknown[] = [];
   try {
-    parsed = JSON.parse(raw);
+    parsedCandidates.push(JSON.parse(candidate));
   } catch {
-    return null;
+    for (let start = 0; start < candidate.length; start += 1) {
+      if (candidate[start] !== '{') continue;
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let end = start; end < candidate.length; end += 1) {
+        const character = candidate[end];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (character === '\\') escaped = true;
+          else if (character === '"') inString = false;
+          continue;
+        }
+        if (character === '"') {
+          inString = true;
+          continue;
+        }
+        if (character === '{') depth += 1;
+        if (character !== '}') continue;
+        depth -= 1;
+        if (depth !== 0) continue;
+        try {
+          parsedCandidates.push(JSON.parse(candidate.slice(start, end + 1)));
+        } catch {
+          // Keep scanning in case a later balanced object is valid JSON.
+        }
+        break;
+      }
+    }
   }
 
-  if (!isRecord(parsed)) return null;
-  const keys = Object.keys(parsed).sort();
-  if (keys.join('|') !== 'confidence|decision|justification') return null;
+  for (const parsed of parsedCandidates) {
+    if (!isRecord(parsed)) continue;
+    const keys = Object.keys(parsed).sort();
+    if (keys.join('|') !== 'confidence|decision|justification') continue;
 
-  const decision = parsed.decision;
-  const confidence = parsed.confidence;
-  const justification = parsed.justification;
-  if (
-    (decision !== 'ATTRIBUTED' &&
-      decision !== 'NOT_ATTRIBUTED' &&
-      decision !== 'UNCERTAIN') ||
-    (confidence !== 'High' && confidence !== 'Medium' && confidence !== 'Low') ||
-    typeof justification !== 'string' ||
-    justification.trim().length === 0 ||
-    justification.length > 600
-  ) {
-    return null;
+    const decision = parsed.decision;
+    const confidence = parsed.confidence;
+    const justification = parsed.justification;
+    if (
+      (decision !== 'ATTRIBUTED' &&
+        decision !== 'NOT_ATTRIBUTED' &&
+        decision !== 'UNCERTAIN') ||
+      (confidence !== 'High' && confidence !== 'Medium' && confidence !== 'Low') ||
+      typeof justification !== 'string' ||
+      justification.trim().length === 0 ||
+      justification.length > 600
+    ) {
+      continue;
+    }
+
+    return {
+      decision,
+      confidence,
+      justification: justification.trim(),
+    };
   }
-
-  return {
-    decision,
-    confidence,
-    justification: justification.trim(),
-  };
+  return null;
 }
 
 function extractOutputText(payload: unknown) {
@@ -169,9 +208,66 @@ type OpenAiAttributionOptions = {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  apiMode?: 'responses' | 'chat-completions';
   timeoutMs: number;
   fetchImpl?: typeof fetch;
 };
+
+function extractChatCompletionText(payload: unknown) {
+  if (!isRecord(payload) || !Array.isArray(payload.choices)) return null;
+  const choice = payload.choices[0];
+  if (!isRecord(choice) || !isRecord(choice.message)) return null;
+  const content = choice.message.content;
+  if (typeof content === 'string') return content;
+  if (typeof choice.message.reasoning === 'string') {
+    return choice.message.reasoning;
+  }
+  if (typeof choice.message.reasoning_content === 'string') {
+    return choice.message.reasoning_content;
+  }
+  if (!Array.isArray(content)) return null;
+
+  const textParts = content.flatMap((part) => {
+    if (!isRecord(part) || typeof part.text !== 'string') return [];
+    return [part.text];
+  });
+  return textParts.length ? textParts.join('') : null;
+}
+
+function describeChatCompletionShape(payload: unknown) {
+  if (!isRecord(payload) || !Array.isArray(payload.choices)) {
+    return 'missing choices';
+  }
+  const choice = payload.choices[0];
+  if (!isRecord(choice) || !isRecord(choice.message)) {
+    return 'missing choice message';
+  }
+  const message = choice.message;
+  const content = message.content;
+  const contentShape = Array.isArray(content)
+    ? `array(${content.length})`
+    : typeof content;
+  const contentLength =
+    typeof content === 'string' ? content.length : 'n/a';
+  return `message fields=${Object.keys(message).sort().join(',')} content=${contentShape} contentLength=${contentLength}`;
+}
+
+function describeAttributionCandidate(raw: string) {
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start < 0 || end <= start) return 'candidate=missing';
+  try {
+    const candidate: unknown = JSON.parse(raw.slice(start, end + 1));
+    if (!isRecord(candidate)) return 'candidate=non-object';
+    const types = Object.entries(candidate)
+      .map(([key, value]) => `${key}:${typeof value}`)
+      .sort()
+      .join(',');
+    return `candidate=${types}`;
+  } catch {
+    return 'candidate=invalid-json';
+  }
+}
 
 export async function requestAiAttribution(
   scenario: SyntheticScenario,
@@ -184,15 +280,24 @@ export async function requestAiAttribution(
   const baseUrl = (
     options.baseUrl ?? 'https://api.openai.com/v1'
   ).replace(/\/+$/, '');
-
-  try {
-    const response = await fetchImpl(`${baseUrl}/responses`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${options.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+  const apiMode = options.apiMode ?? 'responses';
+  const isChatCompletions = apiMode === 'chat-completions';
+  const body = isChatCompletions
+    ? {
+        model: options.model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Return exactly one valid JSON object with only these keys: decision, confidence, justification. decision must be exactly ATTRIBUTED, NOT_ATTRIBUTED, or UNCERTAIN. confidence must be exactly High, Medium, or Low. ATTRIBUTED means the record should be attributed to the searched entity; NOT_ATTRIBUTED means it should not; UNCERTAIN means the evidence is ambiguous. Never output reasoning, markdown, a score, or a verdict.',
+          },
+          { role: 'user', content: buildAttributionPrompt(scenario, record) },
+        ],
+        response_format: { type: 'json_object' },
+        reasoning_effort: 'low',
+        max_tokens: 512,
+      }
+    : {
         model: options.model,
         store: false,
         input: [
@@ -233,9 +338,21 @@ export async function requestAiAttribution(
           },
         },
         max_output_tokens: 180,
-      }),
+      };
+
+  try {
+    const response = await fetchImpl(
+      `${baseUrl}/${isChatCompletions ? 'chat/completions' : 'responses'}`,
+      {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${options.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
       signal: controller.signal,
-    });
+      },
+    );
 
     if (!response.ok) {
       const detail = await providerErrorDetail(response);
@@ -244,9 +361,20 @@ export async function requestAiAttribution(
       );
     }
 
-    const outputText = extractOutputText(await response.json());
+    const responsePayload = await response.json();
+    const outputText = isChatCompletions
+      ? extractChatCompletionText(responsePayload)
+      : extractOutputText(responsePayload);
     const result = outputText ? parseAiAttributionResponse(outputText) : null;
-    if (!result) throw new Error('OpenAI returned an invalid attribution shape');
+    if (!result) {
+      throw new Error(
+        `OpenAI returned an invalid attribution shape${
+          isChatCompletions
+            ? ` (${describeChatCompletionShape(responsePayload)}; ${describeAttributionCandidate(outputText ?? '')})`
+            : ''
+        }`,
+      );
+    }
     return result;
   } finally {
     clearTimeout(timeout);

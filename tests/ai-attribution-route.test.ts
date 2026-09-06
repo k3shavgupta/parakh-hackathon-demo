@@ -4,11 +4,20 @@ import { POST } from '../app/api/ai-attribution/route';
 
 describe('AI attribution API', () => {
   const originalKey = process.env.OPENAI_API_KEY;
+  const originalBaseUrl = process.env.OPENAI_BASE_URL;
+  const originalModel = process.env.OPENAI_MODEL;
+  const originalApiMode = process.env.OPENAI_API_MODE;
   const originalFetch = globalThis.fetch;
 
   afterEach(() => {
     if (originalKey === undefined) delete process.env.OPENAI_API_KEY;
     else process.env.OPENAI_API_KEY = originalKey;
+    if (originalBaseUrl === undefined) delete process.env.OPENAI_BASE_URL;
+    else process.env.OPENAI_BASE_URL = originalBaseUrl;
+    if (originalModel === undefined) delete process.env.OPENAI_MODEL;
+    else process.env.OPENAI_MODEL = originalModel;
+    if (originalApiMode === undefined) delete process.env.OPENAI_API_MODE;
+    else process.env.OPENAI_API_MODE = originalApiMode;
     globalThis.fetch = originalFetch;
   });
 
@@ -113,5 +122,52 @@ describe('AI attribution API', () => {
     expect(first.headers.get('cache-control')).toBe('no-store');
     expect(second.headers.get('cache-control')).toBe('no-store');
     expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes the configured Bedrock Chat Completions mode through the route', async () => {
+    process.env.OPENAI_API_KEY = 'route-test-key';
+    process.env.OPENAI_BASE_URL =
+      'https://bedrock-mantle.us-east-1.api.aws/openai/v1';
+    process.env.OPENAI_MODEL = 'openai.gpt-oss-20b';
+    process.env.OPENAI_API_MODE = 'chat-completions';
+    globalThis.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  decision: 'UNCERTAIN',
+                  confidence: 'Medium',
+                  justification: 'The mocked Bedrock response is ambiguous.',
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+    ) as typeof fetch;
+
+    const response = await POST(
+      new Request('http://localhost/api/ai-attribution', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': 'route-test-bedrock' },
+        body: JSON.stringify({
+          identifier: 'SYN-GSTIN-COURT-004',
+          recordId: 'SYN-CIV-2026-014',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      decision: 'UNCERTAIN',
+      confidence: 'Medium',
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://bedrock-mantle.us-east-1.api.aws/openai/v1/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
   });
 });

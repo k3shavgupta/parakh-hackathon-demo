@@ -12,11 +12,14 @@ Create '.env.local' in the project root:
     # For Bedrock instead:
     # OPENAI_API_KEY=your-bedrock-api-key
     # OPENAI_BASE_URL=https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1
-    # OPENAI_MODEL=your-enabled-bedrock-model-id
+    # OPENAI_MODEL=openai.gpt-oss-20b-1:0
+    # OPENAI_API_MODE=chat-completions
 
 Use 'OPENAI_API_KEY' exactly. Do not rename it to 'VITE_OPENAI_API_KEY'
 or 'NEXT_PUBLIC_OPENAI_API_KEY'; the key is read by the server route and is
-not sent to the browser. Start the app with 'npm run dev'.
+not sent to the browser. For Bedrock, use an API mode supported by the
+selected model: 'responses' or 'chat-completions'. Start the app with
+'npm run dev'.
 
 ## Recommended demo lookups
 

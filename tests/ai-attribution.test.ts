@@ -48,6 +48,36 @@ describe('AI attribution boundary', () => {
         }),
       ),
     ).toBeNull();
+
+    expect(
+      parseAiAttributionResponse(
+        '```json\n{"decision":"UNCERTAIN","confidence":"Medium","justification":"The fixture evidence is ambiguous."}\n```',
+      ),
+    ).toEqual({
+      decision: 'UNCERTAIN',
+      confidence: 'Medium',
+      justification: 'The fixture evidence is ambiguous.',
+    });
+
+    expect(
+      parseAiAttributionResponse(
+        '<reasoning>Internal example: {"decision":"UNCERTAIN"}</reasoning>{"decision":"ATTRIBUTED","confidence":"High","justification":"The synthetic legal name matches the named party."}',
+      ),
+    ).toEqual({
+      decision: 'ATTRIBUTED',
+      confidence: 'High',
+      justification: 'The synthetic legal name matches the named party.',
+    });
+
+    expect(
+      parseAiAttributionResponse(
+        'analysis {"note":"internal"} final {"decision":"NOT_ATTRIBUTED","confidence":"High","justification":"The named party is a different synthetic entity."}',
+      ),
+    ).toEqual({
+      decision: 'NOT_ATTRIBUTED',
+      confidence: 'High',
+      justification: 'The named party is a different synthetic entity.',
+    });
   });
 
   it('allows ten calls per IP in a rolling hour and blocks the eleventh', () => {
@@ -133,6 +163,50 @@ describe('AI attribution boundary', () => {
         fetchImpl,
       }),
     ).resolves.toMatchObject({ decision: 'ATTRIBUTED', confidence: 'High' });
+  });
+
+  it('supports Bedrock OpenAI-compatible Chat Completions', async () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-CLEAR-001');
+    const record = scenario?.publicRecords[0];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      expect(input).toBe(
+        'https://bedrock-mantle.us-east-1.api.aws/openai/v1/chat/completions',
+      );
+      const requestBody = JSON.parse(
+        typeof init?.body === 'string' ? init.body : '',
+      );
+      expect(requestBody.model).toBe('openai.gpt-oss-20b');
+      expect(requestBody.response_format).toEqual({ type: 'json_object' });
+      expect(requestBody.reasoning_effort).toBe('low');
+      expect(requestBody.max_tokens).toBe(512);
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  decision: 'NOT_ATTRIBUTED',
+                  confidence: 'High',
+                  justification: 'The synthetic party is a different entity.',
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+    };
+
+    await expect(
+      requestAiAttribution(scenario!, record!, {
+        apiKey: 'bedrock-test-key',
+        model: 'openai.gpt-oss-20b',
+        baseUrl: 'https://bedrock-mantle.us-east-1.api.aws/openai/v1',
+        apiMode: 'chat-completions',
+        timeoutMs: 1000,
+        fetchImpl,
+      }),
+    ).resolves.toMatchObject({ decision: 'NOT_ATTRIBUTED', confidence: 'High' });
   });
 
   it('retains a sanitized provider error detail for server-side diagnostics', async () => {
