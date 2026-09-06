@@ -468,9 +468,8 @@ export default function Home() {
               </span>
             </h2>
             <p className="mx-auto mt-5 max-w-2xl leading-7 text-[#675a62]">
-              A wrong attribution could unfairly link an innocent business to someone else&apos;s court case.
-              In Round 2, Parakh introduces AI attribution reasoning that evaluates structured evidence factors
-              and explains its conclusion — showing its full reasoning, not just a yes or no.
+              A wrong match could unfairly link an innocent business to someone else&apos;s court case.
+              Our new AI explainer looks at names, PANs, and filing dates to make sure it&apos;s truly the same company — and tells you exactly why, in plain English.
             </p>
           </div>
 
@@ -484,9 +483,9 @@ export default function Home() {
                   What it does
                 </span>
               </div>
-              <h3 className="mt-6 text-xl font-medium">Evidence-based evaluation</h3>
+              <h3 className="mt-6 text-xl font-medium">Checking the facts</h3>
               <p className="mt-3 leading-7 text-[#6b5e66]">
-                When a public record shares similar names with a searched business, an AI reviewer weighs the synthetic identity evidence, aliases, and filing history to decide whether the candidate truly belongs to the entity.
+                When a public record has a similar name, the AI steps in. It checks the PAN, known aliases, and filing history to decide if it&apos;s a true match or just a coincidence.
               </p>
             </article>
 
@@ -499,9 +498,9 @@ export default function Home() {
                   Why it matters
                 </span>
               </div>
-              <h3 className="mt-6 text-xl font-medium">Preventing false alarms</h3>
+              <h3 className="mt-6 text-xl font-medium">Preventing mix-ups</h3>
               <p className="mt-3 leading-7 text-[#6b5e66]">
-                Name similarity is common across Indian commerce. Naive text matches create false associations. Structured factor checks ensure clear distinction between separate businesses before credit decisions are made.
+                Many companies in India share similar names. Just matching text can cause false alarms. Our step-by-step checks keep innocent businesses clear before credit decisions are made.
               </p>
             </article>
 
@@ -514,9 +513,9 @@ export default function Home() {
                   What you see
                 </span>
               </div>
-              <h3 className="mt-6 text-xl font-medium">Factors + confidence visual</h3>
+              <h3 className="mt-6 text-xl font-medium">Clear explanations</h3>
               <p className="mt-3 leading-7 text-[#6b5e66]">
-                Instead of a black-box verdict, every reviewed record displays structured reasoning factor chips (Name similarity, PAN pattern, Filing overlap), a proportional confidence gauge, and a written justification.
+                Instead of a mysterious "Yes" or "No", you get simple factor tags (like Name or PAN match), a confidence score, and a short explanation you can actually read.
               </p>
             </article>
           </div>
