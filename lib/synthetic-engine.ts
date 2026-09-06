@@ -116,8 +116,9 @@ function searchTokens(value: string) {
 }
 
 function editDistance(left: string, right: string) {
-  const previous = Array.from({ length: right.length + 1 }, (_, index) =>
-    index,
+  const previous = Array.from(
+    { length: right.length + 1 },
+    (_, index) => index,
   );
 
   for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
@@ -155,7 +156,10 @@ function scoreSearchCandidate(query: string, candidate: string) {
     candidateTokenSet.has(token),
   ).length;
   const tokenScore = sharedTokens / Math.max(queryTokens.length, 1);
-  const maximumLength = Math.max(normalizedQuery.length, normalizedCandidate.length);
+  const maximumLength = Math.max(
+    normalizedQuery.length,
+    normalizedCandidate.length,
+  );
   const editScore =
     maximumLength === 0
       ? 0
@@ -392,7 +396,9 @@ function summarizeScenario(id: string, observationLabels: SyntheticLabel[]) {
 }
 
 export function buildSyntheticReport(identifier: string): SyntheticReport {
-  const normalizedIdentifier = identifier.trim().toUpperCase();
+  const normalizedInput = identifier.trim().toUpperCase();
+  const normalizedIdentifier =
+    resolveSyntheticSearch(normalizedInput)?.identifier ?? normalizedInput;
 
   if (!isAllowedSyntheticIdentifier(normalizedIdentifier)) {
     throw new Error(

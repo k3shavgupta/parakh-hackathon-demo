@@ -77,6 +77,13 @@ describe('synthetic v4 report engine', () => {
     );
   });
 
+  it('generates a report when the homepage demo reference is used directly', () => {
+    const report = buildSyntheticReport('DEMO-2026-0001');
+
+    expect(report.searchedIdentifier).toBe('SYN-GSTIN-CLEAR-001');
+    expect(report.reportId).toMatch(/^PRK-SYN-CLEAR-001$/);
+  });
+
   it('does not resolve unrelated or real-looking search input', () => {
     expect(resolveSyntheticSearch('')).toBeNull();
     expect(resolveSyntheticSearch('Unknown Demo Industries')).toBeNull();
