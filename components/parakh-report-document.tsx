@@ -21,6 +21,7 @@ import type {
   ReportAiSummaryState,
   ReportAiResponse,
 } from '@/lib/report-ai-state';
+import { reportSections, filingStatus } from '@/lib/report-layout';
 import { cn } from '@/lib/utils';
 
 const disclosure =
@@ -150,9 +151,27 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
     };
   }, [report.publicRecords, report.searchedIdentifier]);
 
-  const delayed = report.filingPattern.rows.filter(
-    (row) => row.gstr1 !== 'filed' || row.gstr3b !== 'filed',
-  ).length;
+  const sections = reportSections(report);
+  const { counts, filingLabel } = sections;
+  const g1Pub = counts.gstr1.onTime + counts.gstr1.late + counts.gstr1.missing;
+  const g3Pub = counts.gstr3b.onTime + counts.gstr3b.late + counts.gstr3b.missing;
+
+  const filingHeadline =
+    filingLabel === 'FLAG'
+      ? 'Filing history shows delays'
+      : filingLabel === 'NOTE'
+        ? 'Limited filing history available'
+        : 'Returns filed on time';
+  const filingParagraph =
+    filingLabel === 'NOTE'
+      ? 'Available filing data is limited. Parakh cannot determine whether returns were filed on time for periods or filing dates not available from the source.'
+      : `Available filing data covers ${counts.periods} fixture periods. GSTR-1 and GSTR-3B filings are evaluated against standard statutory due dates.`;
+
+  const rows = report.filingPattern.rows;
+  const rangeStr =
+    rows.length > 0
+      ? `${rows[0].month.split(' ')[0].toUpperCase()} ${rows[0].period.slice(2, 4)} – ${rows[rows.length - 1].month.split(' ')[0].toUpperCase()} ${rows[rows.length - 1].period.slice(2, 4)}`
+      : '';
 
   const identityObservation =
     report.observations.find((item) => item.title.includes('Name') || item.title.includes('profile')) ??
@@ -351,46 +370,161 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             </div>
           </SectionCard>
 
-          <SectionCard title="Filing pattern" kicker="Recent return behaviour">
-            <div className="mb-4 grid grid-cols-3 gap-3">
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4 border border-[#f0e6ee]">
-                <div className="text-2xl font-semibold text-[var(--parakh-ink)]">
-                  {report.filingPattern.rows.length}
+          <SectionCard title="GST return filing" kicker="Statutory returns & timing compliance">
+            <div className="space-y-6">
+              {/* Header Info Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0e7ee] pb-4">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--parakh-ink)]">
+                    {filingHeadline}
+                  </h3>
+                  <p className="mt-1 text-xs text-[#675b63] max-w-xl leading-relaxed">
+                    {filingParagraph}
+                  </p>
                 </div>
-                <div className="mt-1 text-xs text-[#7f7279]">periods read</div>
+                <span
+                  className={cn(
+                    'rounded-full border px-3.5 py-1 text-xs font-semibold',
+                    badgeClass(filingLabel),
+                  )}
+                >
+                  {filingLabel}
+                </span>
               </div>
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4 border border-[#f0e6ee]">
-                <div className="text-2xl font-semibold text-[var(--parakh-ink)]">{delayed}</div>
-                <div className="mt-1 text-xs text-[#7f7279]">follow-ups</div>
-              </div>
-              <div className="rounded-[18px] bg-[#fbf8f5] p-4 border border-[#f0e6ee]">
-                <div className="text-2xl font-semibold text-[var(--parakh-ink)]">
-                  {report.filingPattern.confidence}
-                </div>
-                <div className="mt-1 text-xs text-[#7f7279]">confidence</div>
-              </div>
-            </div>
-            <div className="overflow-x-auto rounded-[18px] border border-[#f0e7ee]">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-[#fbf8f5] text-[#675b63]">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Period</th>
-                    <th className="px-4 py-3 font-semibold">GSTR-1</th>
-                    <th className="px-4 py-3 font-semibold">GSTR-3B</th>
-                    <th className="px-4 py-3 font-semibold">Filed on</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.filingPattern.rows.map((row) => (
-                    <tr key={row.period} className="border-t border-[#f0e7ee]">
-                      <td className="px-4 py-3 font-medium">{row.month}</td>
-                      <td className="px-4 py-3 capitalize">{row.gstr1}</td>
-                      <td className="px-4 py-3 capitalize">{row.gstr3b}</td>
-                      <td className="px-4 py-3">{row.filedOn}</td>
+
+              {/* Summary Counts Table (PRK-00068 signature style) */}
+              <div className="overflow-x-auto rounded-[16px] border border-[#f0e7ee] bg-[#fbf8f5]">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-[#ebd8e5] text-[#7e6c80] font-semibold">
+                    <tr>
+                      <th className="px-4 py-2.5">Return</th>
+                      <th className="px-4 py-2.5">Published</th>
+                      <th className="px-4 py-2.5">On time</th>
+                      <th className="px-4 py-2.5">Late</th>
+                      <th className="px-4 py-2.5">Source unavailable</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#f0e7ee] text-[var(--parakh-ink)] font-medium">
+                    <tr>
+                      <td className="px-4 py-2.5 font-bold text-[#4f1a46]">GSTR-1</td>
+                      <td className="px-4 py-2.5">{g1Pub}</td>
+                      <td className="px-4 py-2.5 text-[#15803d] font-semibold">{counts.gstr1.onTime}</td>
+                      <td className="px-4 py-2.5 text-[#9f1239] font-semibold">{counts.gstr1.late}</td>
+                      <td className="px-4 py-2.5 text-[#7e6c80]">{counts.gstr1.unavailable}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2.5 font-bold text-[#4f1a46]">GSTR-3B</td>
+                      <td className="px-4 py-2.5">{g3Pub}</td>
+                      <td className="px-4 py-2.5 text-[#15803d] font-semibold">{counts.gstr3b.onTime}</td>
+                      <td className="px-4 py-2.5 text-[#9f1239] font-semibold">{counts.gstr3b.late}</td>
+                      <td className="px-4 py-2.5 text-[#7e6c80]">{counts.gstr3b.unavailable}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Visual Dot Timeline */}
+              <div className="rounded-[18px] bg-white p-4 border border-[#ebd8e5] space-y-4 shadow-sm">
+                {/* GSTR-1 Timeline Row */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold text-[var(--parakh-ink)] mb-2">
+                    <span>GSTR-1</span>
+                    <span className="text-[#7e6c80] font-medium">{rangeStr}</span>
+                  </div>
+                  <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                    {rows.map((row) => {
+                      const m = row.month.split(' ')[0].slice(0, 4).toUpperCase();
+                      const yStr = row.period.slice(2, 4);
+                      const st = filingStatus(row.gstr1);
+                      return (
+                        <div key={`g1-${row.period}`} className="flex flex-col items-center min-w-[36px]">
+                          <span className="text-[10px] font-bold text-[#7e6c80]">{m}</span>
+                          <span className="text-[9px] text-[#9b8793]">{yStr}</span>
+                          <div className="mt-2 flex h-4 items-center justify-center">
+                            {st === 'onTime' ? (
+                              <span className="size-2.5 rounded-full bg-[#15803d]" title={`${m} ${yStr}: On time`} />
+                            ) : st === 'late' ? (
+                              <span className="inline-block w-0 h-0 border-x-[5px] border-x-transparent border-b-[8px] border-b-[#9f1239]" title={`${m} ${yStr}: Late`} />
+                            ) : (
+                              <span className="inline-block w-3 h-0.5 bg-[#7e6c80]" title={`${m} ${yStr}: Source unavailable`} />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* GSTR-3B Timeline Row */}
+                <div className="border-t border-[#f0e7ee] pt-3">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[var(--parakh-ink)] mb-2">
+                    <span>GSTR-3B</span>
+                    <span className="text-[#7e6c80] font-medium">{rangeStr}</span>
+                  </div>
+                  <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                    {rows.map((row) => {
+                      const m = row.month.split(' ')[0].slice(0, 4).toUpperCase();
+                      const yStr = row.period.slice(2, 4);
+                      const st = filingStatus(row.gstr3b);
+                      return (
+                        <div key={`g3-${row.period}`} className="flex flex-col items-center min-w-[36px]">
+                          <span className="text-[10px] font-bold text-[#7e6c80]">{m}</span>
+                          <span className="text-[9px] text-[#9b8793]">{yStr}</span>
+                          <div className="mt-2 flex h-4 items-center justify-center">
+                            {st === 'onTime' ? (
+                              <span className="size-2.5 rounded-full bg-[#15803d]" title={`${m} ${yStr}: On time`} />
+                            ) : st === 'late' ? (
+                              <span className="inline-block w-0 h-0 border-x-[5px] border-x-transparent border-b-[8px] border-b-[#9f1239]" title={`${m} ${yStr}: Late`} />
+                            ) : (
+                              <span className="inline-block w-3 h-0.5 bg-[#7e6c80]" title={`${m} ${yStr}: Source unavailable`} />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Timeline Legend */}
+                <div className="flex flex-wrap items-center gap-5 border-t border-[#f0e7ee] pt-3 text-[11px] text-[#7e6c80]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-[#15803d]" />
+                    On time
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-0 h-0 border-x-[4px] border-x-transparent border-b-[7px] border-b-[#9f1239]" />
+                    Late
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-0.5 bg-[#7e6c80]" />
+                    Not available from source
+                  </span>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown Table */}
+              <div className="overflow-x-auto rounded-[16px] border border-[#f0e7ee]">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#fbf8f5] text-[#675b63]">
+                    <tr>
+                      <th className="px-3.5 py-2.5 font-semibold">Period</th>
+                      <th className="px-3.5 py-2.5 font-semibold">GSTR-1</th>
+                      <th className="px-3.5 py-2.5 font-semibold">GSTR-3B</th>
+                      <th className="px-3.5 py-2.5 font-semibold">Filed on</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.filingPattern.rows.map((row) => (
+                      <tr key={row.period} className="border-t border-[#f0e7ee]">
+                        <td className="px-3.5 py-2.5 font-medium">{row.month}</td>
+                        <td className="px-3.5 py-2.5 capitalize">{row.gstr1}</td>
+                        <td className="px-3.5 py-2.5 capitalize">{row.gstr3b}</td>
+                        <td className="px-3.5 py-2.5">{row.filedOn}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </SectionCard>
 

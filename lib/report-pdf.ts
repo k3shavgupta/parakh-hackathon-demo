@@ -451,31 +451,31 @@ export async function createSyntheticReportPdf(
     detailText: string,
     badgeLabel: string,
   ) => {
-    const badgeW = 72;
-    const badgeH = 18;
+    const badgeW = 66;
+    const badgeH = 16;
     const badgeX = W - M - badgeW;
-    const maxContentW = CW - 140 - badgeW - 14;
+    const maxContentW = CW - 135 - badgeW - 12;
 
-    const headlineLines = wrap(headline, bold, 9.5, maxContentW);
-    const detailLines = wrap(detailText, regular, 8.5, maxContentW);
+    const headlineLines = wrap(headline, bold, 9, maxContentW);
+    const detailLines = wrap(detailText, regular, 8, maxContentW);
     const rowHeight = Math.max(
-      28,
-      12 + headlineLines.length * 11.5 + detailLines.length * 11 + 4,
+      22,
+      6 + headlineLines.length * 10.5 + detailLines.length * 10 + 2,
     );
 
-    ensure(rowHeight);
+    ensure(rowHeight + 4);
 
-    const rowBaselineY = y - 11;
-    draw(categoryLabel, M, rowBaselineY, 8, bold, darkPlum);
+    const rowBaselineY = y - 9;
+    draw(categoryLabel, M, rowBaselineY, 7.5, bold, darkPlum);
 
     let textY = rowBaselineY;
     for (const line of headlineLines) {
-      draw(line, M + 140, textY, 9.5, bold, ink);
-      textY -= 11.5;
+      draw(line, M + 135, textY, 9, bold, ink);
+      textY -= 10.5;
     }
     for (const line of detailLines) {
-      draw(line, M + 140, textY, 8.5, regular, subdued);
-      textY -= 11;
+      draw(line, M + 135, textY, 8, regular, subdued);
+      textY -= 10;
     }
 
     drawBadge(page, badgeLabel, badgeX, rowBaselineY - 1, badgeW, badgeH);
@@ -487,7 +487,7 @@ export async function createSyntheticReportPdf(
       thickness: 0.5,
       color: hairline,
     });
-    y -= 3;
+    y -= 2;
   };
 
   // AI Summary Row
@@ -540,64 +540,68 @@ export async function createSyntheticReportPdf(
       ? 'Available filing data is limited. Parakh cannot determine whether returns were filed on time for periods or filing dates not available from the source.'
       : `Available filing data covers ${sections.counts.periods} fixture periods. GSTR-1 and GSTR-3B filings are evaluated against standard statutory due dates.`;
 
-  // Height budget for full GST section:
-  // Headline + Paragraph: ~26pt
-  // Summary Table: ~32pt
-  // Dot Timeline (GSTR-1 + GSTR-3B + Legend): ~68pt
-  // Total ~126pt
-  ensure(130);
+  ensure(135);
 
-  const gstSectionTopY = y - 11;
-  draw('GST RETURN FILING', M, gstSectionTopY, 8, bold, darkPlum);
+  const gstSectionTopY = y - 9;
+  draw('GST RETURN FILING', M, gstSectionTopY, 7.5, bold, darkPlum);
 
-  const badgeW = 72;
-  const badgeH = 18;
+  const badgeW = 66;
+  const badgeH = 16;
   const badgeX = W - M - badgeW;
   drawBadge(page, filingBadge, badgeX, gstSectionTopY - 1, badgeW, badgeH);
 
   // Headline & Paragraph
-  draw(filingHeadline, M + 140, gstSectionTopY, 9.5, bold, ink);
-  const gstParaLines = wrap(filingParagraph, regular, 8, CW - 140 - badgeW - 14);
-  let gstCurY = gstSectionTopY - 11.5;
+  const mainColX = M + 135;
+  const mainColW = CW - 135;
+  draw(filingHeadline, mainColX, gstSectionTopY, 9, bold, ink);
+  const gstParaLines = wrap(filingParagraph, regular, 8, mainColW - badgeW - 12);
+  let gstCurY = gstSectionTopY - 10.5;
   for (const line of gstParaLines) {
-    draw(line, M + 140, gstCurY, 8, regular, subdued);
-    gstCurY -= 10.5;
+    draw(line, mainColX, gstCurY, 8, regular, subdued);
+    gstCurY -= 10;
   }
   gstCurY -= 4;
 
   // 1. Summary Counts Table (Return, Published, On time, Late, Source unavailable)
-  const tblLeft = M + 140;
-  const colRet = tblLeft;
-  const colPub = tblLeft + 75;
-  const colOnTime = tblLeft + 140;
-  const colLate = tblLeft + 195;
-  const colUnavail = tblLeft + 245;
+  const colRet = mainColX;
+  const colPub = mainColX + 85;
+  const colOnTime = mainColX + 155;
+  const colLate = mainColX + 215;
+  const colUnavail = mainColX + 265;
 
   draw('Return', colRet, gstCurY, 7, bold, muted);
   draw('Published', colPub, gstCurY, 7, bold, muted);
   draw('On time', colOnTime, gstCurY, 7, bold, muted);
   draw('Late', colLate, gstCurY, 7, bold, muted);
   draw('Source unavailable', colUnavail, gstCurY, 7, bold, muted);
-  gstCurY -= 11;
+  gstCurY -= 5;
+
+  page.drawLine({
+    start: { x: mainColX, y: gstCurY },
+    end: { x: W - M, y: gstCurY },
+    thickness: 0.5,
+    color: hairline,
+  });
+  gstCurY -= 9;
 
   const g1Pub = sections.counts.gstr1.onTime + sections.counts.gstr1.late + sections.counts.gstr1.missing;
   draw('GSTR-1', colRet, gstCurY, 7.5, bold, ink);
-  draw(String(g1Pub), colPub + 10, gstCurY, 7.5, regular, ink);
+  draw(String(g1Pub), colPub + 8, gstCurY, 7.5, regular, ink);
   draw(String(sections.counts.gstr1.onTime), colOnTime + 8, gstCurY, 7.5, regular, ink);
   draw(String(sections.counts.gstr1.late), colLate + 6, gstCurY, 7.5, regular, ink);
-  draw(String(sections.counts.gstr1.unavailable), colUnavail + 22, gstCurY, 7.5, regular, ink);
-  gstCurY -= 10.5;
+  draw(String(sections.counts.gstr1.unavailable), colUnavail + 24, gstCurY, 7.5, regular, ink);
+  gstCurY -= 9.5;
 
   const g3Pub = sections.counts.gstr3b.onTime + sections.counts.gstr3b.late + sections.counts.gstr3b.missing;
   draw('GSTR-3B', colRet, gstCurY, 7.5, bold, ink);
-  draw(String(g3Pub), colPub + 10, gstCurY, 7.5, regular, ink);
+  draw(String(g3Pub), colPub + 8, gstCurY, 7.5, regular, ink);
   draw(String(sections.counts.gstr3b.onTime), colOnTime + 8, gstCurY, 7.5, regular, ink);
   draw(String(sections.counts.gstr3b.late), colLate + 6, gstCurY, 7.5, regular, ink);
-  draw(String(sections.counts.gstr3b.unavailable), colUnavail + 22, gstCurY, 7.5, regular, ink);
-  gstCurY -= 7;
+  draw(String(sections.counts.gstr3b.unavailable), colUnavail + 24, gstCurY, 7.5, regular, ink);
+  gstCurY -= 6;
 
   page.drawLine({
-    start: { x: tblLeft, y: gstCurY },
+    start: { x: mainColX, y: gstCurY },
     end: { x: W - M, y: gstCurY },
     thickness: 0.5,
     color: hairline,
@@ -612,9 +616,9 @@ export async function createSyntheticReportPdf(
       ? `${rows[0].month.split(' ')[0].toUpperCase()} ${rows[0].period.slice(2, 4)} – ${rows[rows.length - 1].month.split(' ')[0].toUpperCase()} ${rows[rows.length - 1].period.slice(2, 4)}`
       : 'AUG 25 – JUL 26';
 
-  const tlColW = Math.min(28, (W - M - tblLeft - 8) / numPeriods);
+  // Responsive column width across available width
+  const tlColW = Math.min(34, (W - M - mainColX) / numPeriods);
 
-  // Helper to format short month
   const parseMonth = (row: (typeof rows)[number]) => {
     const parts = row.month.split(' ');
     const m = parts[0].slice(0, 4).toUpperCase();
@@ -623,71 +627,98 @@ export async function createSyntheticReportPdf(
   };
 
   // --- GSTR-1 Timeline Row ---
-  draw('GSTR-1', tblLeft, gstCurY, 7.5, bold, ink);
+  draw('GSTR-1', mainColX, gstCurY, 7.5, bold, ink);
   const rW1 = regular.widthOfTextAtSize(rangeStr, 7);
   draw(rangeStr, W - M - rW1, gstCurY, 7, bold, muted);
-  gstCurY -= 10;
+  gstCurY -= 9;
 
   for (let i = 0; i < rows.length; i++) {
     const { m, yStr } = parseMonth(rows[i]);
-    const colX = tblLeft + i * tlColW;
-    draw(m, colX, gstCurY, 6, bold, muted);
-    draw(yStr, colX, gstCurY - 7, 5.5, regular, muted);
+    const colX = mainColX + i * tlColW;
+    const colCenter = colX + tlColW / 2;
+
+    const mW = bold.widthOfTextAtSize(m, 6);
+    draw(m, colCenter - mW / 2, gstCurY, 6, bold, muted);
+
+    const yW = regular.widthOfTextAtSize(yStr, 5.5);
+    draw(yStr, colCenter - yW / 2, gstCurY - 6.5, 5.5, regular, muted);
 
     const st = filingStatus(rows[i].gstr1);
-    const markY = gstCurY - 17;
+    const markY = gstCurY - 15;
     if (st === 'onTime') {
-      page.drawCircle({ x: colX + 6, y: markY, size: 2.5, color: statusClear.text });
+      page.drawCircle({ x: colCenter, y: markY, size: 2.5, color: statusClear.text });
     } else if (st === 'late') {
-      page.drawSvgPath('M 0 5 L 2.5 0 L 5 5 Z', { x: colX + 3.5, y: markY + 3.5, color: statusFlag.text });
+      // Upward pointing triangle (apex at top y=0 in SVG, base at bottom y=5)
+      page.drawSvgPath('M 2.5 0 L 0 5 L 5 5 Z', { x: colCenter - 2.5, y: markY + 2.5, color: statusFlag.text });
     } else {
-      draw('—', colX + 3, markY - 2, 7, regular, muted);
+      page.drawLine({
+        start: { x: colCenter - 3, y: markY },
+        end: { x: colCenter + 3, y: markY },
+        thickness: 1,
+        color: muted,
+      });
     }
   }
-  gstCurY -= 22;
+  gstCurY -= 28;
 
   // --- GSTR-3B Timeline Row ---
-  draw('GSTR-3B', tblLeft, gstCurY, 7.5, bold, ink);
+  draw('GSTR-3B', mainColX, gstCurY, 7.5, bold, ink);
   const rW3 = regular.widthOfTextAtSize(rangeStr, 7);
   draw(rangeStr, W - M - rW3, gstCurY, 7, bold, muted);
-  gstCurY -= 10;
+  gstCurY -= 9;
 
   for (let i = 0; i < rows.length; i++) {
     const { m, yStr } = parseMonth(rows[i]);
-    const colX = tblLeft + i * tlColW;
-    draw(m, colX, gstCurY, 6, bold, muted);
-    draw(yStr, colX, gstCurY - 7, 5.5, regular, muted);
+    const colX = mainColX + i * tlColW;
+    const colCenter = colX + tlColW / 2;
+
+    const mW = bold.widthOfTextAtSize(m, 6);
+    draw(m, colCenter - mW / 2, gstCurY, 6, bold, muted);
+
+    const yW = regular.widthOfTextAtSize(yStr, 5.5);
+    draw(yStr, colCenter - yW / 2, gstCurY - 6.5, 5.5, regular, muted);
 
     const st = filingStatus(rows[i].gstr3b);
-    const markY = gstCurY - 17;
+    const markY = gstCurY - 15;
     if (st === 'onTime') {
-      page.drawCircle({ x: colX + 6, y: markY, size: 2.5, color: statusClear.text });
+      page.drawCircle({ x: colCenter, y: markY, size: 2.5, color: statusClear.text });
     } else if (st === 'late') {
-      page.drawSvgPath('M 0 5 L 2.5 0 L 5 5 Z', { x: colX + 3.5, y: markY + 3.5, color: statusFlag.text });
+      // Upward pointing triangle
+      page.drawSvgPath('M 2.5 0 L 0 5 L 5 5 Z', { x: colCenter - 2.5, y: markY + 2.5, color: statusFlag.text });
     } else {
-      draw('—', colX + 3, markY - 2, 7, regular, muted);
+      page.drawLine({
+        start: { x: colCenter - 3, y: markY },
+        end: { x: colCenter + 3, y: markY },
+        thickness: 1,
+        color: muted,
+      });
     }
   }
-  gstCurY -= 22;
+  gstCurY -= 26;
 
   // Legend Row
-  page.drawCircle({ x: tblLeft + 4, y: gstCurY + 2, size: 2.5, color: statusClear.text });
-  draw('On time', tblLeft + 11, gstCurY, 6.5, regular, muted);
+  page.drawCircle({ x: mainColX + 3.5, y: gstCurY + 2.5, size: 2.5, color: statusClear.text });
+  draw('On time', mainColX + 9, gstCurY, 6.5, regular, muted);
 
-  page.drawSvgPath('M 0 5 L 2.5 0 L 5 5 Z', { x: tblLeft + 52, y: gstCurY + 5.5, color: statusFlag.text });
-  draw('Late', tblLeft + 60, gstCurY, 6.5, regular, muted);
+  page.drawSvgPath('M 2.5 0 L 0 5 L 5 5 Z', { x: mainColX + 50, y: gstCurY + 5, color: statusFlag.text });
+  draw('Late', mainColX + 58, gstCurY, 6.5, regular, muted);
 
-  draw('—', tblLeft + 92, gstCurY - 1, 7, regular, muted);
-  draw('Not available from source', tblLeft + 104, gstCurY, 6.5, regular, muted);
+  page.drawLine({
+    start: { x: mainColX + 88, y: gstCurY + 2.5 },
+    end: { x: mainColX + 95, y: gstCurY + 2.5 },
+    thickness: 1,
+    color: muted,
+  });
+  draw('Not available from source', mainColX + 99, gstCurY, 6.5, regular, muted);
 
-  gstCurY -= 8;
+  gstCurY -= 7;
   page.drawLine({
     start: { x: M, y: gstCurY },
     end: { x: W - M, y: gstCurY },
     thickness: 0.5,
     color: hairline,
   });
-  gstCurY -= 4;
+  gstCurY -= 2;
   y = gstCurY;
 
   // Court Records Row
@@ -709,59 +740,54 @@ export async function createSyntheticReportPdf(
     'NOTE',
   );
 
-  // 5. "What this check could not find" Callout Box with Dark Plum Left Accent Bar
-  y -= 6;
-  const cannotFindInline =
-    report.cannotFind.length > 0
-      ? report.cannotFind.join(' · ')
-      : 'No live systems were queried.';
-  const cannotFindLines = wrap(cannotFindInline, regular, 8, CW - 32);
+  // 5. "What this check could not find" Callout Box
+  const cannotFindSummary = report.cannotFind.join(' · ');
+  const cannotFindLines = wrap(cannotFindSummary, regular, 8, CW - 32);
 
   if (report.cannotFind.length > 6) {
-    ensure(36);
-    draw('What this check could not find', M, y - 10, 8.5, bold, darkPlum);
-    y -= 18;
+    ensure(32);
+    draw('What this check could not find', M, y - 8, 8, bold, darkPlum);
+    y -= 15;
     for (const item of report.cannotFind) {
-      const itemLines = wrap(`- ${item}`, regular, 8, CW);
-      ensure(itemLines.length * 10.5 + 2);
+      const itemLines = wrap(`- ${item}`, regular, 7.5, CW);
+      ensure(itemLines.length * 9.5 + 2);
       for (const line of itemLines) {
-        draw(line, M, y, 8, regular, subdued);
-        y -= 10.5;
+        draw(line, M, y, 7.5, regular, subdued);
+        y -= 9.5;
       }
     }
   } else {
-    const cannotBoxHeight = 16 + cannotFindLines.length * 10.5 + 4;
-    ensure(cannotBoxHeight);
-    drawAccentedBox(page, M, y, CW, cannotBoxHeight, 6, darkPlum, wash, border);
+    const cannotBoxHeight = 14 + cannotFindLines.length * 9.5 + 4;
+    ensure(cannotBoxHeight + 4);
+    drawAccentedBox(page, M, y, CW, cannotBoxHeight, 5, darkPlum, wash, border);
 
-    draw('What this check could not find.', M + 14, y - 12, 8, bold, darkPlum);
-    const titleW = bold.widthOfTextAtSize('What this check could not find. ', 8);
-    draw('No live systems were queried.', M + 14 + titleW, y - 12, 8, regular, muted);
+    draw('What this check could not find.', M + 12, y - 10, 7.5, bold, darkPlum);
+    const titleW = bold.widthOfTextAtSize('What this check could not find. ', 7.5);
+    draw('No live systems were queried.', M + 12 + titleW, y - 10, 7.5, regular, muted);
 
-    let cfY = y - 22;
+    let cfY = y - 19;
     for (const line of cannotFindLines) {
-      draw(line, M + 14, cfY, 8, regular, subdued);
-      cfY -= 10.5;
+      draw(line, M + 12, cfY, 7.5, regular, subdued);
+      cfY -= 9.5;
     }
-    y -= cannotBoxHeight + 7;
+    y -= cannotBoxHeight + 6;
   }
 
   // 6. "NEXT CHECK" Callout Box with Brand Plum Left Accent Bar
   const nextCheckText = nextCheck(report);
-  const nextCheckLines = wrap(nextCheckText, regular, 8.5, CW - 120);
-  const nextCheckHeight = Math.max(28, 12 + nextCheckLines.length * 11);
+  const nextCheckLines = wrap(nextCheckText, regular, 8, CW - 115);
+  const nextCheckHeight = Math.max(24, 10 + nextCheckLines.length * 9.5);
 
-  ensure(nextCheckHeight);
-  drawAccentedBox(page, M, y, CW, nextCheckHeight, 6, plum, wash, border);
+  ensure(nextCheckHeight + 4);
+  drawAccentedBox(page, M, y, CW, nextCheckHeight, 5, plum, wash, border);
 
-  draw('NEXT CHECK', M + 14, y - 15, 8, bold, plum);
-  let ncY = y - 15;
+  draw('NEXT CHECK', M + 12, y - 13, 7.5, bold, plum);
+  let ncY = y - 13;
   for (const line of nextCheckLines) {
-    draw(line, M + 98, ncY, 8.5, regular, ink);
-    ncY -= 11.5;
+    draw(line, M + 92, ncY, 8, regular, ink);
+    ncY -= 10;
   }
-  y -= nextCheckHeight + 10;
-
+  y -= nextCheckHeight + 8;
   // ==========================================
   // SUBSEQUENT PAGES: COURT & PUBLIC RECORDS
   // ==========================================
