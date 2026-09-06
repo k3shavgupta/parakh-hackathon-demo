@@ -570,18 +570,22 @@ body {
 .report-page-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 20px;
   padding-bottom: 18px;
   border-bottom: 1px solid #ebdfe7;
   font-size: 10px;
   color: #776773;
 }
-.report-page-header > div {
+.report-page-header__brand {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 12px;
 }
 .report-page-header > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   text-align: right;
 }
 .report-page-header strong {

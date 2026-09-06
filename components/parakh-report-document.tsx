@@ -73,12 +73,21 @@ function Sheet({
   return (
     <article className="report-sheet">
       <header className="report-page-header">
-        <div>
-          <strong>Parakh</strong>
-          <span>Synthetic due-diligence report</span>
+        <div className="report-page-header__brand flex items-center gap-3">
+          <img
+            src="/assets/logo-horizontal.svg"
+            alt="Parakh"
+            width={130}
+            height={32}
+            className="h-7 w-auto"
+          />
+          <span className="text-[#d8b6cf] font-light">|</span>
+          <span className="text-[0.65rem] font-bold tracking-widest text-[#8a7982] mt-0.5">
+            FACTUAL DUE DILIGENCE ENGINE
+          </span>
         </div>
         <div>
-          <span>REF {report.reportId}</span>
+          <span className="font-semibold tracking-wide text-[#594955]">REF {report.reportId}</span>
           <span>
             {report.generatedAt} · Page {page} of {total}
           </span>
