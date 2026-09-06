@@ -1,6 +1,4 @@
-import Link from 'next/link';
 import {
-  ArrowLeft,
   BrainCircuit,
   CheckCircle2,
   Database,
@@ -10,6 +8,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import { DemoProductHeader } from '@/components/demo-product-header';
 import { SCENARIOS } from '@/lib/synthetic-engine';
 
 const disclosure =
@@ -57,23 +56,7 @@ const pipeline = [
 export default function SyntheticDataPage() {
   return (
     <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
-      <nav className="px-4 py-4 sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full bg-white px-4 py-3 shadow-[0_1px_2px_rgba(42,24,31,0.05)]">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
-            <span className="grid size-8 place-items-center rounded-full bg-[#7a336f] text-white">
-              प
-            </span>
-            Parakh · Evidence Lab
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-[#201b1e] px-4 text-xs font-semibold text-white"
-          >
-            <ArrowLeft className="size-4" />
-            Back to search
-          </Link>
-        </div>
-      </nav>
+      <DemoProductHeader />
 
       <section className="mx-2 rounded-[30px] bg-[radial-gradient(circle_at_top,#fff_0%,#fbf2f7_48%,#efdfeb_100%)] px-5 py-14 sm:mx-4 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-6xl">

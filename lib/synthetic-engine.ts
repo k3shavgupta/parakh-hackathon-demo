@@ -84,6 +84,7 @@ export type SyntheticSearchMatch = SyntheticScenarioSummary & {
 };
 
 const SYNTHETIC_IDENTIFIER = /^SYN-GSTIN-[A-Z]+-\d{3}$/;
+const DEMO_REFERENCE = /^DEMO-2026-000([1-5])$/;
 const GSTIN_LIKE = /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/;
 const PAN_LIKE = /^[A-Z]{5}\d{4}[A-Z]$/;
 const AADHAAR_LIKE = /^\d{4}\s?\d{4}\s?\d{4}$/;
@@ -200,6 +201,12 @@ export function resolveSyntheticSearch(
   const exactScenario = getSyntheticScenario(normalizedValue);
   if (exactScenario) {
     return { ...summarizeScenarioMetadata(exactScenario), score: 1 };
+  }
+
+  const demoReferenceMatch = normalizedValue.match(DEMO_REFERENCE);
+  if (demoReferenceMatch) {
+    const scenario = RAW_SYNTHETIC_SCENARIOS[Number(demoReferenceMatch[1]) - 1];
+    if (scenario) return { ...summarizeScenarioMetadata(scenario), score: 1 };
   }
 
   const queryTokens = searchTokens(normalizedValue);

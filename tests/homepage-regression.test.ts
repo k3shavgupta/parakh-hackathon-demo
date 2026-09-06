@@ -8,4 +8,12 @@ describe('homepage regression copy', () => {
     expect(homepage).toContain('Standalone Build What Moves India prototype.');
     expect(homepage).not.toMatch(/Production parakh\.biz is\s+unchanged\./);
   });
+
+  it('uses the live homepage composition and the supplied Parakh wordmark', () => {
+    expect(homepage).toContain('<DemoProductHeader />');
+    expect(homepage).toContain('One GSTIN.<br />The <em>whole record</em>.');
+    expect(homepage).toContain('DEMO-2026-0002');
+    expect(homepage).toContain('Synthetic report preview');
+    expect(homepage).toContain('resolveSyntheticSearch');
+  });
 });

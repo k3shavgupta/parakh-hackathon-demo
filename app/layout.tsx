@@ -17,9 +17,11 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Parakh Build What Moves India Demo',
+  metadataBase: new URL('https://build.parakh.biz'),
+  title: 'Parakh Demo — One GSTIN. The whole record.',
   description:
-    'A public, no-login Parakh hackathon demo using synthetic counterparty and public-record data only.',
+    'Explore a synthetic Parakh counterparty report with registration, filing, and court-record evidence. Built for Build What Moves India.',
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'Parakh synthetic report demo',
     description:

@@ -59,6 +59,9 @@ describe('synthetic v4 report engine', () => {
   });
 
   it('resolves legal names, aliases, and small search typos to known fixtures', () => {
+    expect(resolveSyntheticSearch('DEMO-2026-0001')?.identifier).toBe(
+      'SYN-GSTIN-CLEAR-001',
+    );
     expect(
       resolveSyntheticSearch('Setu Freight Corridors Private Limited')
         ?.identifier,

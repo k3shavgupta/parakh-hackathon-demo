@@ -22,6 +22,7 @@ import {
 import type { SyntheticReport } from '@/lib/synthetic-engine';
 import { SCENARIOS } from '@/lib/synthetic-engine';
 import { cn } from '@/lib/utils';
+import { DemoProductHeader } from '@/components/demo-product-header';
 
 const disclosure =
   'This hackathon demo uses synthetic data only. It does not access live government systems, private records, real GSTINs, PANs, Aadhaar numbers, OTPs, payments, or production Parakh data.';
@@ -220,22 +221,14 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
 
   return (
     <main className="min-h-screen bg-[#fbf8f5] text-[#201b1e]">
-      <nav className="sticky top-0 z-30 border-b border-[#efe7ec] bg-[#fbf8f5]/90 px-4 py-3 backdrop-blur-xl print:hidden sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-semibold"
-          >
-            <span className="grid size-8 place-items-center rounded-full bg-[#7a336f] text-white">
-              प
-            </span>
-            Parakh demo
-          </Link>
+      <DemoProductHeader
+        hideWhenPrinting
+        actions={
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#201b1e] px-4 text-sm font-semibold text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--parakh-ink)] px-4 text-sm font-semibold text-white"
             >
               <Printer className="size-4" />
               Print
@@ -244,19 +237,19 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
               type="button"
               onClick={() => void downloadPdf()}
               disabled={pdfBusy}
-              className="hidden h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#7a336f] sm:inline-flex"
+              className="hidden min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[var(--parakh-plum)] sm:inline-flex"
             >
               <Download className="size-4" />
               {pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
             </button>
           </div>
-        </div>
-        {pdfError ? (
-          <p className="mt-3 text-right text-sm text-[#a33f4a]" role="alert">
-            {pdfError}
-          </p>
-        ) : null}
-      </nav>
+        }
+      />
+      {pdfError ? (
+        <p className="mx-auto max-w-6xl px-5 pt-3 text-right text-sm text-[#a33f4a] print:hidden" role="alert">
+          {pdfError}
+        </p>
+      ) : null}
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">
         <div className="rounded-[32px] bg-[radial-gradient(circle_at_top,#fff_0%,#fbf2f7_42%,#f0e1ea_100%)] p-5 shadow-[0_30px_90px_rgba(42,24,31,0.08)] sm:p-8">
