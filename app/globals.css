@@ -103,22 +103,23 @@ body {
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 88px;
+  height: 72px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(230, 230, 230, 0.7);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
 }
 
 .demo-production-nav__inner {
   display: flex;
-  width: min(1240px, 100%);
+  width: min(1280px, 100%);
   margin: 0 auto;
-  padding: 0 48px;
+  padding: 0 32px;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .demo-production-logo {
@@ -126,31 +127,44 @@ body {
   align-items: center;
   color: var(--parakh-plum);
   text-decoration: none;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.demo-production-logo img { display: block; width: 130px; height: 32px; }
+.demo-production-logo img {
+  display: block;
+  width: 124px;
+  height: auto;
+  flex-shrink: 0;
+}
 
 .demo-production-nav__links {
   display: flex;
   align-items: center;
+  gap: 1.5rem;
+  white-space: nowrap;
 }
-
-.demo-production-nav__links { gap: 1.9rem; }
 
 .demo-production-nav__tools {
   display: flex;
   flex: none;
   align-items: center;
+  white-space: nowrap;
 }
 
 .demo-production-nav__links a {
   color: #3f393d;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   text-decoration: none;
+  white-space: nowrap;
+  line-height: 1;
+  transition: color 0.15s ease;
 }
 
-.demo-production-nav__links a:hover { color: var(--parakh-plum); }
+.demo-production-nav__links a:hover {
+  color: var(--parakh-plum);
+}
 
 .demo-production-hero {
   overflow: visible;
@@ -506,25 +520,41 @@ body {
 }
 .report-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 .report-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
+  gap: 6px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 16px;
   border-radius: 999px;
+  border: 1px solid #ebdbe5;
   background: white;
   color: var(--parakh-plum-dark);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+.report-actions button:hover {
+  background: var(--parakh-wash);
+  border-color: var(--parakh-plum);
 }
 .report-actions button.report-download {
   color: white;
   background: var(--parakh-plum);
+  border-color: var(--parakh-plum);
+}
+.report-actions button.report-download:hover {
+  background: var(--parakh-plum-dark);
+  border-color: var(--parakh-plum-dark);
 }
 .report-actions button:disabled {
   opacity: 0.55;
