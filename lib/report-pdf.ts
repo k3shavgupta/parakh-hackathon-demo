@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
 
 import type { AiAttributionResult } from './ai-attribution';
 import type { SyntheticLabel } from './synthetic-fixtures';
@@ -87,26 +87,6 @@ function wrapLine(text: string, font: PDFFont, size: number, maxWidth: number) {
   return lines;
 }
 
-function drawTextBlock(
-  page: PDFPage,
-  text: string,
-  x: number,
-  y: number,
-  font: PDFFont,
-  size: number,
-  color: ReturnType<typeof rgb>,
-  maxWidth: number,
-) {
-  const lineHeight = size * 1.45;
-  for (const sourceLine of text.split('\n')) {
-    for (const line of wrapLine(sourceLine, font, size, maxWidth)) {
-      page.drawText(line, { x, y, size, font, color });
-      y -= lineHeight;
-    }
-  }
-  return y;
-}
-
 export async function createSyntheticReportPdf(
   report: SyntheticReport,
   reasoning: Record<string, ReportAiReasoningState> = {},
@@ -131,6 +111,22 @@ export async function createSyntheticReportPdf(
     }
   };
 
+  const drawWrappedText = (
+    text: string,
+    font: PDFFont,
+    size: number,
+    color: ReturnType<typeof rgb>,
+  ) => {
+    const lineHeight = size * 1.45;
+    for (const sourceLine of text.split('\n')) {
+      for (const line of wrapLine(sourceLine, font, size, maxWidth)) {
+        addPageIfNeeded(lineHeight);
+        page.drawText(line, { x: margin, y, size, font, color });
+        y -= lineHeight;
+      }
+    }
+  };
+
   page.drawText('PARAKH · SYNTHETIC REPORT', {
     x: margin,
     y,
@@ -147,20 +143,15 @@ export async function createSyntheticReportPdf(
     color: ink,
   });
   y -= 20;
-  y = drawTextBlock(
-    page,
+  drawWrappedText(
     `${report.reportId} · ${report.searchedIdentifier} · ${report.generatedAt}`,
-    margin,
-    y,
     regular,
     9,
     muted,
-    maxWidth,
   );
   y -= 16;
 
   for (const block of reportToText(report, reasoning).split('\n')) {
-    addPageIfNeeded(26);
     const isHeading = [
       'Public-record signals:',
       'AI Attribution Reasoning:',
@@ -168,12 +159,13 @@ export async function createSyntheticReportPdf(
       'What we could not find:',
     ].includes(block);
     if (isHeading) {
+      addPageIfNeeded(26);
       y -= 7;
       page.drawText(block, { x: margin, y, size: 12, font: bold, color: plum });
       y -= 20;
       continue;
     }
-    y = drawTextBlock(page, block, margin, y, regular, 9, ink, maxWidth);
+    drawWrappedText(block, regular, 9, ink);
     y -= 2;
   }
 

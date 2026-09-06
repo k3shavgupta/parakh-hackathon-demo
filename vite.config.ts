@@ -45,6 +45,10 @@ export default defineConfig(async () => {
   const { cloudflare } = await import('@cloudflare/vite-plugin');
 
   return {
+    // OPENAI_* is explicitly referenced only by the server route. Keeping
+    // that import-meta value out of client modules preserves key secrecy while
+    // making `.env.local` available in Vinext's worker dev runtime.
+    envPrefix: ['VITE_', 'OPENAI_'],
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }

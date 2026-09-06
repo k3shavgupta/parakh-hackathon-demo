@@ -25,9 +25,17 @@ function requestIp(request: Request) {
   );
 }
 
-function serverEnv(name: string) {
-  if (typeof process === 'undefined') return undefined;
-  return process.env[name];
+function serverEnv(name: 'OPENAI_API_KEY' | 'OPENAI_MODEL') {
+  const processValue =
+    typeof process === 'undefined' ? undefined : process.env[name];
+  if (processValue) return processValue;
+
+  // Cloudflare's local worker runtime does not expose arbitrary shell env
+  // values through process.env. Static import.meta.env references are kept in
+  // the server bundle and are never included in the client bundle.
+  const importMetaEnv = import.meta.env as ImportMetaEnv &
+    Record<string, string | undefined>;
+  return importMetaEnv[name];
 }
 
 function isAttributionRequest(

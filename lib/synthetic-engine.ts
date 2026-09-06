@@ -202,7 +202,12 @@ export function resolveSyntheticSearch(
     return { ...summarizeScenarioMetadata(exactScenario), score: 1 };
   }
 
-  let bestMatch: SyntheticSearchMatch | null = null;
+  const queryTokens = searchTokens(normalizedValue);
+  // A single common word such as "Metro" or "Ltd" is not enough evidence to
+  // choose one synthetic fixture. Exact synthetic IDs remain supported above.
+  if (queryTokens.length < 2 || normalizedValue.length < 6) return null;
+
+  const matches: SyntheticSearchMatch[] = [];
   for (const scenario of RAW_SYNTHETIC_SCENARIOS) {
     const summary = summarizeScenarioMetadata(scenario);
     const candidates = [
@@ -216,12 +221,21 @@ export function resolveSyntheticSearch(
       ),
     );
 
-    if (!bestMatch || score > bestMatch.score) {
-      bestMatch = { ...summary, score };
-    }
+    matches.push({ ...summary, score });
   }
 
-  return bestMatch && bestMatch.score >= 0.58 ? bestMatch : null;
+  matches.sort((left, right) => right.score - left.score);
+  const bestMatch = matches[0];
+  const runnerUp = matches[1];
+  if (
+    !bestMatch ||
+    bestMatch.score < 0.65 ||
+    (runnerUp && bestMatch.score - runnerUp.score < 0.08)
+  ) {
+    return null;
+  }
+
+  return bestMatch;
 }
 
 function formatPeriod(period: string) {

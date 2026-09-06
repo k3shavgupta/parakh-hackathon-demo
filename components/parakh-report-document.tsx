@@ -131,6 +131,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
     Record<string, ReportAiReasoningState>
   >({});
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,6 +200,7 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
 
   async function downloadPdf() {
     setPdfBusy(true);
+    setPdfError(null);
     try {
       const bytes = await createSyntheticReportPdf(report, reasoning);
       const url = URL.createObjectURL(
@@ -209,6 +211,8 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
       link.download = `${report.reportId.toLowerCase()}-synthetic-report.pdf`;
       link.click();
       URL.revokeObjectURL(url);
+    } catch {
+      setPdfError('PDF download is unavailable right now. Use Print to save a copy.');
     } finally {
       setPdfBusy(false);
     }
@@ -247,6 +251,11 @@ export function ParakhReportDocument({ report }: { report: SyntheticReport }) {
             </button>
           </div>
         </div>
+        {pdfError ? (
+          <p className="mt-3 text-right text-sm text-[#a33f4a]" role="alert">
+            {pdfError}
+          </p>
+        ) : null}
       </nav>
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">

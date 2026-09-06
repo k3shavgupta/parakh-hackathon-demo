@@ -75,6 +75,8 @@ describe('synthetic v4 report engine', () => {
     expect(resolveSyntheticSearch('')).toBeNull();
     expect(resolveSyntheticSearch('Unknown Demo Industries')).toBeNull();
     expect(resolveSyntheticSearch('27ABCDE1234F1Z5')).toBeNull();
+    expect(resolveSyntheticSearch('Metro')).toBeNull();
+    expect(resolveSyntheticSearch('Ltd')).toBeNull();
   });
 
   it('exposes unmistakably synthetic public-record metadata for AI prompts', () => {

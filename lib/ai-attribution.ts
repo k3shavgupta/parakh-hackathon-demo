@@ -27,6 +27,11 @@ export function createIpRateLimiter({ limit, windowMs }: RateLimiterOptions) {
   return {
     check(ip: string, now = Date.now()) {
       const cutoff = now - windowMs;
+      for (const [key, timestamps] of callsByIp) {
+        if (!timestamps.some((timestamp) => timestamp > cutoff)) {
+          callsByIp.delete(key);
+        }
+      }
       const recentCalls = (callsByIp.get(ip) ?? []).filter(
         (timestamp) => timestamp > cutoff,
       );
