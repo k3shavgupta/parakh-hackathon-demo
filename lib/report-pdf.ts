@@ -87,6 +87,18 @@ function wrapLine(text: string, font: PDFFont, size: number, maxWidth: number) {
   return lines;
 }
 
+async function embedBrandLogo(pdf: PDFDocument) {
+  if (typeof fetch !== 'function') return null;
+
+  try {
+    const response = await fetch('/assets/logo-horizontal.png');
+    if (!response.ok) return null;
+    return pdf.embedPng(new Uint8Array(await response.arrayBuffer()));
+  } catch {
+    return null;
+  }
+}
+
 export async function createSyntheticReportPdf(
   report: SyntheticReport,
   reasoning: Record<string, ReportAiReasoningState> = {},
@@ -94,9 +106,13 @@ export async function createSyntheticReportPdf(
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const logo = await embedBrandLogo(pdf);
   const plum = rgb(0.478, 0.2, 0.435);
+  const softPlum = rgb(0.973, 0.945, 0.965);
   const ink = rgb(0.125, 0.106, 0.118);
   const muted = rgb(0.404, 0.357, 0.388);
+  const line = rgb(0.91, 0.86, 0.9);
+  const warmWhite = rgb(0.988, 0.98, 0.969);
   const width = 595.28;
   const height = 841.89;
   const margin = 48;
@@ -104,10 +120,36 @@ export async function createSyntheticReportPdf(
   let page = pdf.addPage([width, height]);
   let y = height - margin;
 
+  const drawContinuationHeader = () => {
+    if (logo) {
+      page.drawImage(logo, {
+        x: margin,
+        y: height - margin - 21,
+        width: 92,
+        height: 21,
+      });
+    } else {
+      page.drawText('Parakh', {
+        x: margin,
+        y: height - margin - 16,
+        size: 14,
+        font: bold,
+        color: plum,
+      });
+    }
+    page.drawLine({
+      start: { x: margin, y: height - margin - 30 },
+      end: { x: width - margin, y: height - margin - 30 },
+      thickness: 1,
+      color: line,
+    });
+    y = height - margin - 52;
+  };
+
   const addPageIfNeeded = (requiredSpace: number) => {
-    if (y - requiredSpace < margin) {
+    if (y - requiredSpace < margin + 24) {
       page = pdf.addPage([width, height]);
-      y = height - margin;
+      drawContinuationHeader();
     }
   };
 
@@ -127,18 +169,59 @@ export async function createSyntheticReportPdf(
     }
   };
 
-  page.drawText('PARAKH · SYNTHETIC REPORT', {
+  page.drawRectangle({ x: 0, y: 0, width, height, color: warmWhite });
+  if (logo) {
+    page.drawImage(logo, {
+      x: margin,
+      y: height - margin - 28,
+      width: 122,
+      height: 28,
+    });
+  } else {
+    page.drawText('Parakh', {
+      x: margin,
+      y: height - margin - 20,
+      size: 18,
+      font: bold,
+      color: plum,
+    });
+  }
+  page.drawText('BUILD WHAT MOVES INDIA · SPECIMEN', {
+    x: width - margin - 182,
+    y: height - margin - 17,
+    size: 7,
+    font: bold,
+    color: muted,
+  });
+  page.drawLine({
+    start: { x: margin, y: height - margin - 38 },
+    end: { x: width - margin, y: height - margin - 38 },
+    thickness: 1,
+    color: line,
+  });
+  y = height - margin - 68;
+
+  page.drawRectangle({
     x: margin,
+    y: y - 106,
+    width: maxWidth,
+    height: 118,
+    color: softPlum,
+    borderColor: line,
+    borderWidth: 1,
+  });
+  page.drawText('SYNTHETIC COUNTERPARTY RECORD', {
+    x: margin + 18,
     y,
-    size: 10,
+    size: 8,
     font: bold,
     color: plum,
   });
-  y -= 28;
+  y -= 25;
   page.drawText(report.business.tradeName, {
-    x: margin,
+    x: margin + 18,
     y,
-    size: 24,
+    size: 23,
     font: bold,
     color: ink,
   });
@@ -149,9 +232,43 @@ export async function createSyntheticReportPdf(
     9,
     muted,
   );
-  y -= 16;
+  y -= 27;
 
-  for (const block of reportToText(report, reasoning).split('\n')) {
+  const disclosureTop = y;
+  page.drawRectangle({
+    x: margin,
+    y: disclosureTop - 54,
+    width: maxWidth,
+    height: 66,
+    color: ink,
+  });
+  page.drawText('SYNTHETIC-DATA DISCLOSURE', {
+    x: margin + 16,
+    y,
+    size: 8,
+    font: bold,
+    color: rgb(0.96, 0.82, 0.94),
+  });
+  y -= 16;
+  for (const disclosureLine of wrapLine(
+    report.syntheticDisclosure,
+    regular,
+    8,
+    maxWidth - 32,
+  )) {
+    page.drawText(disclosureLine, {
+      x: margin + 16,
+      y,
+      size: 8,
+      font: regular,
+      color: rgb(1, 1, 1),
+    });
+    y -= 11;
+  }
+  y = disclosureTop - 78;
+
+  const reportLines = reportToText(report, reasoning).split('\n').slice(7);
+  for (const block of reportLines) {
     const isHeading = [
       'Public-record signals:',
       'AI Attribution Reasoning:',
@@ -161,12 +278,34 @@ export async function createSyntheticReportPdf(
     if (isHeading) {
       addPageIfNeeded(26);
       y -= 7;
+      page.drawLine({
+        start: { x: margin, y: y + 8 },
+        end: { x: width - margin, y: y + 8 },
+        thickness: 1,
+        color: line,
+      });
       page.drawText(block, { x: margin, y, size: 12, font: bold, color: plum });
       y -= 20;
       continue;
     }
     drawWrappedText(block, regular, 9, ink);
     y -= 2;
+  }
+
+  for (const reportPage of pdf.getPages()) {
+    reportPage.drawLine({
+      start: { x: margin, y: 36 },
+      end: { x: width - margin, y: 36 },
+      thickness: 1,
+      color: line,
+    });
+    reportPage.drawText(`${report.reportId} · Synthetic demo only`, {
+      x: margin,
+      y: 23,
+      size: 7,
+      font: regular,
+      color: muted,
+    });
   }
 
   return pdf.save();

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PDFDocument } from 'pdf-lib';
 
 import { buildSyntheticReport } from '../lib/synthetic-engine';
@@ -9,6 +10,10 @@ import {
 } from '../lib/report-pdf';
 
 describe('report AI attribution presentation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('includes successful model reasoning as a distinct report section', () => {
     const report = buildSyntheticReport('SYN-GSTIN-COURT-004');
     const firstRecord = report.publicRecords[0];
@@ -59,14 +64,40 @@ describe('report AI attribution presentation', () => {
 
     expect(bytes.byteLength).toBeGreaterThan(1000);
     expect(pdf.getPageCount()).toBeGreaterThan(0);
-    expect(pdf.getPage(0).getSize()).toMatchObject({ width: 595.28, height: 841.89 });
+    expect(pdf.getPage(0).getSize()).toMatchObject({
+      width: 595.28,
+      height: 841.89,
+    });
+  });
+
+  it('keeps the branded Parakh header in the downloadable PDF', async () => {
+    const report = buildSyntheticReport('SYN-GSTIN-COURT-004');
+    const logoBytes = await readFile('public/assets/logo-horizontal.png');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => logoBytes,
+      })),
+    );
+    const bytes = await createSyntheticReportPdf(report);
+    const pdf = await PDFDocument.load(bytes);
+    const firstPage = pdf.getPage(0);
+
+    expect(
+      firstPage.node.normalizedEntries().XObject.keys().length,
+    ).toBeGreaterThan(0);
+    expect(
+      firstPage.node.normalizedEntries().Font.keys().length,
+    ).toBeGreaterThan(1);
   });
 
   it('starts a new A4 page when long report text reaches the page boundary', async () => {
     const report = buildSyntheticReport('SYN-GSTIN-COURT-004');
     report.cannotFind = Array.from(
       { length: 90 },
-      (_, index) => `Synthetic limitation ${index + 1}: ${'evidence '.repeat(18)}`,
+      (_, index) =>
+        `Synthetic limitation ${index + 1}: ${'evidence '.repeat(18)}`,
     );
 
     const bytes = await createSyntheticReportPdf(report);
