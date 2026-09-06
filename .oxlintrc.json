@@ -37,6 +37,7 @@
     "prefer-const": "error",
     "prefer-rest-params": "error",
     "prefer-spread": "error",
+    "nextjs/no-img-element": "off",
     "import/no-anonymous-default-export": "warn",
     "react/display-name": "error",
     "react/jsx-no-comment-textnodes": "error",

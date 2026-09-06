@@ -518,7 +518,7 @@ export default function Home() {
               </div>
               <h3 className="mt-6 text-xl font-medium">Clear explanations</h3>
               <p className="mt-3 leading-7 text-[#6b5e66]">
-                Instead of a mysterious "Yes" or "No", you get simple factor tags (like Name or PAN match), a confidence score, and a short explanation you can actually read.
+                Instead of a mysterious &ldquo;Yes&rdquo; or &ldquo;No&rdquo;, you get simple factor tags (like Name or PAN match), a confidence score, and a short explanation you can actually read.
               </p>
             </article>
           </div>
