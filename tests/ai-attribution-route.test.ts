@@ -1,0 +1,186 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { POST } from '../app/api/ai-attribution/route';
+
+describe('AI attribution API', () => {
+  const originalKey = process.env.OPENAI_API_KEY;
+  const originalBaseUrl = process.env.OPENAI_BASE_URL;
+  const originalModel = process.env.OPENAI_MODEL;
+  const originalApiMode = process.env.OPENAI_API_MODE;
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    if (originalKey === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = originalKey;
+    if (originalBaseUrl === undefined) delete process.env.OPENAI_BASE_URL;
+    else process.env.OPENAI_BASE_URL = originalBaseUrl;
+    if (originalModel === undefined) delete process.env.OPENAI_MODEL;
+    else process.env.OPENAI_MODEL = originalModel;
+    if (originalApiMode === undefined) delete process.env.OPENAI_API_MODE;
+    else process.env.OPENAI_API_MODE = originalApiMode;
+    globalThis.fetch = originalFetch;
+  });
+
+  it('rejects malformed request bodies before touching a fixture', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/ai-attribution', {
+        method: 'POST',
+        body: JSON.stringify({ identifier: 'SYN-GSTIN-COURT-004' }),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'identifier and recordId are required.',
+    });
+  });
+
+  it('rejects record IDs outside the server-resolved synthetic fixture', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/ai-attribution', {
+        method: 'POST',
+        body: JSON.stringify({
+          identifier: 'SYN-GSTIN-COURT-004',
+          recordId: 'NOT-A-SYNTHETIC-RECORD',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({
+      error: 'Synthetic fixture record not found.',
+    });
+  });
+
+  it('calls the provider through the real route when a server key is configured', async () => {
+    process.env.OPENAI_API_KEY = 'route-test-key';
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            output_text: JSON.stringify({
+              decision: 'ATTRIBUTED',
+              confidence: 'High',
+              justification:
+                'The synthetic record names the exact fixture entity.',
+            }),
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    ) as typeof fetch;
+
+    const response = await POST(
+      new Request('http://localhost/api/ai-attribution', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': 'route-test-success' },
+        body: JSON.stringify({
+          identifier: 'SYN-GSTIN-COURT-004',
+          recordId: 'SYN-CIV-2026-014',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      decision: 'ATTRIBUTED',
+      confidence: 'High',
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.openai.com/v1/responses',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('does not cache attribution responses between repeated requests', async () => {
+    process.env.OPENAI_API_KEY = 'route-test-key';
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            output_text: JSON.stringify({
+              decision: 'UNCERTAIN',
+              confidence: 'Medium',
+              justification: 'The mocked provider response is fresh.',
+            }),
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    ) as typeof fetch;
+
+    const request = (ip: string) =>
+      POST(
+        new Request('http://localhost/api/ai-attribution', {
+          method: 'POST',
+          headers: { 'x-forwarded-for': ip },
+          body: JSON.stringify({
+            identifier: 'SYN-GSTIN-COURT-004',
+            recordId: 'SYN-CIV-2026-014',
+          }),
+        }),
+      );
+
+    const first = await request('route-test-fresh-1');
+    const second = await request('route-test-fresh-2');
+
+    expect(first.headers.get('cache-control')).toBe('no-store');
+    expect(second.headers.get('cache-control')).toBe('no-store');
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes the configured Bedrock Chat Completions mode through the route', async () => {
+    process.env.OPENAI_API_KEY = 'route-test-key';
+    process.env.OPENAI_BASE_URL =
+      'https://bedrock-mantle.us-east-1.api.aws/openai/v1';
+    process.env.OPENAI_MODEL = 'openai.gpt-oss-20b';
+    process.env.OPENAI_API_MODE = 'chat-completions';
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  tool_calls: [
+                    {
+                      type: 'function',
+                      function: {
+                        name: 'attribute_record',
+                        arguments: JSON.stringify({
+                          decision: 'UNCERTAIN',
+                          confidence: 'Medium',
+                          justification:
+                            'The mocked Bedrock response is ambiguous.',
+                        }),
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    ) as typeof fetch;
+
+    const response = await POST(
+      new Request('http://localhost/api/ai-attribution', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': 'route-test-bedrock' },
+        body: JSON.stringify({
+          identifier: 'SYN-GSTIN-COURT-004',
+          recordId: 'SYN-CIV-2026-014',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      decision: 'UNCERTAIN',
+      confidence: 'Medium',
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://bedrock-mantle.us-east-1.api.aws/openai/v1/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+});

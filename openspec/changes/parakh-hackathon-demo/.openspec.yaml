@@ -1,4 +1,0 @@
-schema: superspec
-created: 2026-08-27
-goal: Deliver a public, zero-auth, fixture-only demo at build.parakh.biz without
-  modifying production Parakh.
