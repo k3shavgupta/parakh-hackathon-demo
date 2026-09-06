@@ -105,7 +105,7 @@ function JsonPanel({ value }: { value: unknown }) {
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden rounded-[18px] bg-[#201d1d] shadow-inner">
+    <div className="flex flex-col w-full self-start overflow-hidden rounded-[18px] bg-[#201d1d] shadow-inner">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 shrink-0">
         <span className="text-xs font-semibold text-white/60">Local fixture JSON</span>
         <button
@@ -117,7 +117,7 @@ function JsonPanel({ value }: { value: unknown }) {
           {copied ? 'Copied' : 'Copy JSON'}
         </button>
       </div>
-      <pre className="flex-1 overflow-auto p-4 font-mono text-xs leading-5 text-[#eadce6] min-h-[260px] max-h-[380px] lg:max-h-none">
+      <pre className="h-72 overflow-auto p-4 font-mono text-xs leading-5 text-[#eadce6]">
         {text}
       </pre>
     </div>
@@ -338,7 +338,7 @@ export default function SyntheticDataPage() {
                   </a>
                 </div>
 
-                <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div className="mt-6 grid gap-6 lg:grid-cols-2 lg:items-start">
                   <div className="space-y-5">
                     <section>
                       <h3 className="text-sm font-semibold text-[var(--parakh-ink)]">
