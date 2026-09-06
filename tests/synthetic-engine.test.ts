@@ -69,6 +69,9 @@ describe('synthetic v4 report engine', () => {
     expect(resolveSyntheticSearch('Navkar Metro')?.identifier).toBe(
       'SYN-GSTIN-DELAY-002',
     );
+    expect(resolveSyntheticSearch('Dakshin Alloy Traders')?.identifier).toBe(
+      'SYN-GSTIN-MISMATCH-003',
+    );
     expect(resolveSyntheticSearch('Prism Rual Tools')?.identifier).toBe(
       'SYN-GSTIN-PARTIAL-005',
     );
@@ -91,5 +94,16 @@ describe('synthetic v4 report engine', () => {
       partySide: 'named-party',
       matchBasis: 'Exact synthetic legal-name match',
     });
+  });
+
+  it('includes an explicit similar-name different-entity fixture for non-attribution demos', () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-MISMATCH-003');
+    expect(scenario?.publicRecords).toContainEqual(
+      expect.objectContaining({
+        id: 'SYN-REG-MISMATCH-028',
+        partySide: 'not-applicable',
+        matchBasis: 'Similar words only; different synthetic legal entity',
+      }),
+    );
   });
 });

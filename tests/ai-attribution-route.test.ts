@@ -79,4 +79,39 @@ describe('AI attribution API', () => {
       expect.objectContaining({ method: 'POST' }),
     );
   });
+
+  it('does not cache attribution responses between repeated requests', async () => {
+    process.env.OPENAI_API_KEY = 'route-test-key';
+    globalThis.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          output_text: JSON.stringify({
+            decision: 'UNCERTAIN',
+            confidence: 'Medium',
+            justification: 'The mocked provider response is fresh.',
+          }),
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+    ) as typeof fetch;
+
+    const request = (ip: string) =>
+      POST(
+        new Request('http://localhost/api/ai-attribution', {
+          method: 'POST',
+          headers: { 'x-forwarded-for': ip },
+          body: JSON.stringify({
+            identifier: 'SYN-GSTIN-COURT-004',
+            recordId: 'SYN-CIV-2026-014',
+          }),
+        }),
+      );
+
+    const first = await request('route-test-fresh-1');
+    const second = await request('route-test-fresh-2');
+
+    expect(first.headers.get('cache-control')).toBe('no-store');
+    expect(second.headers.get('cache-control')).toBe('no-store');
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
 });

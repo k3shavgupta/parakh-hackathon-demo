@@ -260,6 +260,21 @@ export const RAW_SYNTHETIC_SCENARIOS: SyntheticScenario[] = [
         source: fixtureSource,
         confidence: 'Medium',
       },
+      {
+        id: 'SYN-REG-MISMATCH-028',
+        category: 'registry',
+        caseReference: 'SYNTHETIC-RECORD-DEMO-028',
+        courtName: 'Synthetic Registry Ledger — Example Only',
+        date: '2026-07-22',
+        parties: ['Dakshin Alloy Traders Private Limited'],
+        partySide: 'not-applicable',
+        matchBasis: 'Similar words only; different synthetic legal entity',
+        signal: 'NOTE',
+        summary:
+          'A separate fictional legal entity shares the words Dakshin Alloy, but the searched synthetic entity is not named in this record.',
+        source: fixtureSource,
+        confidence: 'High',
+      },
     ],
     unavailable: [
       'Beneficial ownership confirmation',
