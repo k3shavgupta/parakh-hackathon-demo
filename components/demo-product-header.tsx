@@ -12,9 +12,7 @@ export function DemoProductHeader({
     <nav className={`demo-production-nav${hideWhenPrinting ? ' print:hidden' : ''}`}>
       <div className="demo-production-nav__inner">
         <a href="/" aria-label="Parakh demo home" className="demo-production-logo flex items-center gap-3">
-          <img src="/assets/logo-horizontal.svg" alt="" width={100} height={24} />
-          <span className="text-[#d8b6cf] font-light">|</span>
-          <span className="font-serif text-[1.1rem] italic text-[var(--parakh-plum)] tracking-wide">परख</span>
+          <img src="/assets/logo-horizontal.svg" alt="" width={130} height={32} />
           <span className="text-[#d8b6cf] font-light">|</span>
           <span className="text-[0.65rem] font-bold tracking-widest text-[#8a7982] mt-0.5">FACTUAL DUE DILIGENCE ENGINE</span>
         </a>
