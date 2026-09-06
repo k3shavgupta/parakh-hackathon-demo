@@ -413,132 +413,197 @@ export async function createSyntheticReportPdf(
     }
   };
   const sections = reportSections(report);
+  
   const summaryDetail =
     summary.status === 'success'
       ? `${summary.result.key_signal ? `Key finding: ${summary.result.key_signal} ` : ''}AI generated from fictional evidence and record attributions.`
       : 'Fixture findings remain available below.';
-  card(
-    `AI Summary · ${summary.status === 'loading' ? 'Thinking' : summary.status === 'success' ? 'AI generated' : 'Unavailable'}`,
-    summaryCopy(summary),
-    summaryDetail,
-  );
-  text('Subject · Entirely fictional', 8, bold, plum);
-  y -= 5;
-  text(report.business.tradeName, 23, regular);
-  y -= 4;
-  text(report.business.legalName, 10, bold);
-  text(
-    `${report.business.personName} · Fictional subject contact`,
-    8,
-    regular,
-    muted,
-  );
-  y -= 12;
-  facts([
-    ['Prepared for', 'Demo viewer'],
-    [
-      'Report number / searched date (fixture snapshot)',
-      `${report.reportId} · ${report.generatedAt}`,
-    ],
-  ]);
-  facts(
-    [
-      ['GSTIN · fictional marker', report.searchedIdentifier],
-      ['PAN-pattern · fictional', report.business.syntheticPanPattern],
-      ['State · demo', report.business.registrationState],
-      ['Constitution', report.business.constitution],
-    ],
-    4,
-  );
-  text(
-    `Registered address · fictional: ${report.business.syntheticAddress}`,
-    8,
-    regular,
-    muted,
-  );
-  y -= 11;
-  heading('IDENTITY', sections.identity.label);
-  text(sections.identity.detail);
-  y -= 8;
-  heading('REGISTRATION', sections.registrationLabel);
-  text(
-    `${report.business.registrationStatus} · Registered ${report.business.registeredDate} (fictional)`,
-  );
-  y -= 8;
-  ensure(210);
-  heading('GST RETURN FILING', sections.filingLabel);
-  text(
-    `${sections.counts.periods} fixture periods · Each cell is one return; no live lookup.`,
-    8,
-    regular,
-    muted,
-  );
-  y -= 9;
-  // Heatmap and counts stay together, with separate unavailable and explicit not-filed states.
-  const labelWidth = 52,
-    gap = 5,
-    cellWidth =
-      (CW - labelWidth) / Math.max(1, report.filingPattern.rows.length);
-  report.filingPattern.rows.forEach((row, index) =>
-    draw(
-      row.month,
-      M + labelWidth + index * cellWidth + 4,
-      y,
-      7,
-      regular,
-      muted,
-    ),
-  );
-  y -= 18;
-  for (const key of ['gstr1', 'gstr3b'] as const) {
-    draw(key === 'gstr1' ? 'GSTR-1' : 'GSTR-3B', M, y - 4, 8, bold);
-    report.filingPattern.rows.forEach((row, index) => {
-      const status = filingStatus(row[key]),
-        x = M + labelWidth + index * cellWidth;
-      const fill =
-        status === 'onTime'
-          ? '#e9f4ed'
-          : status === 'late'
-            ? '#faeddb'
-            : status === 'missing'
-              ? '#fbe7e9'
-              : '#f3eef1';
-      rounded(x, y + 12, cellWidth - gap, 29, 8, color(fill));
-      draw(
-        FILING_LABELS[status],
-        x + 6,
-        y - 5,
-        7,
-        regular,
-        status === 'onTime' ? color('#2d6a48') : muted,
-      );
-    });
-    y -= 36;
-  }
-  text('Summary counts · individual returns', 7, regular, muted);
-  y -= 5;
-  const labels = ['Return', 'On time', 'Late', 'Not filed', 'Unavailable'];
-  labels.forEach((label, i) => draw(label, M + (i * CW) / 5, y, 8, bold, dark));
-  y -= 19;
-  for (const key of ['gstr1', 'gstr3b'] as const) {
-    const count = sections.counts[key];
-    [
-      key === 'gstr1' ? 'GSTR-1' : 'GSTR-3B',
-      count.onTime,
-      count.late,
-      count.missing,
-      count.unavailable,
-    ].forEach((value, i) => draw(String(value), M + (i * CW) / 5, y, 8));
-    y -= 16;
-  }
-  text(
-    'Not filed requires an explicit fixture marker. Unavailable means no usable filing evidence.',
-    7,
-    regular,
-    muted,
-  );
 
-  newPage();
+  y -= 10;
+  page.drawLine({
+    start: { x: M, y: y },
+    end: { x: W - M, y: y },
+    thickness: 1.5,
+    color: dark,
+  });
+  y -= 25;
+  
+  draw(report.business.tradeName.toUpperCase(), M, y, 20, bold, ink);
+  y -= 15;
+  draw(report.business.legalName, M, y, 10, regular, ink);
+  
+  const rightMetaX = W - M - 180;
+  draw(`REPORT ${report.reportId}`, rightMetaX, y + 15, 8, regular, muted);
+  draw(`SEARCHED ${report.generatedAt}`, rightMetaX, y, 8, regular, muted);
+  
+  y -= 20;
+  draw(`Prepared for `, M, y, 9, regular, ink);
+  draw(`Demo viewer`, M + regular.widthOfTextAtSize('Prepared for ', 9), y, 9, bold, ink);
+  y -= 15;
+  
+  page.drawLine({
+    start: { x: M, y: y },
+    end: { x: W - M, y: y },
+    thickness: 0.5,
+    color: muted,
+  });
+  y -= 15;
+  
+  const gridY = y;
+  draw('GSTIN', M, gridY, 7, regular, muted);
+  draw(report.searchedIdentifier, M, gridY - 12, 9, bold, ink);
+  
+  draw('PAN', M + 130, gridY, 7, regular, muted);
+  draw(report.business.syntheticPanPattern, M + 130, gridY - 12, 9, bold, ink);
+  
+  draw('STATE', M + 260, gridY, 7, regular, muted);
+  draw(report.business.registrationState, M + 260, gridY - 12, 9, bold, ink);
+  
+  draw('CONSTITUTION', M + 380, gridY, 7, regular, muted);
+  draw(report.business.constitution, M + 380, gridY - 12, 9, bold, ink);
+  
+  page.drawLine({
+    start: { x: M + 120, y: gridY + 5 },
+    end: { x: M + 120, y: gridY - 15 },
+    thickness: 0.5,
+    color: muted,
+  });
+  page.drawLine({
+    start: { x: M + 250, y: gridY + 5 },
+    end: { x: M + 250, y: gridY - 15 },
+    thickness: 0.5,
+    color: muted,
+  });
+  page.drawLine({
+    start: { x: M + 370, y: gridY + 5 },
+    end: { x: M + 370, y: gridY - 15 },
+    thickness: 0.5,
+    color: muted,
+  });
+  
+  y -= 30;
+  page.drawLine({
+    start: { x: M, y: y },
+    end: { x: W - M, y: y },
+    thickness: 0.5,
+    color: muted,
+  });
+  y -= 18;
+  
+  draw('REGISTERED ADDRESS', M, y, 7, bold, muted);
+  draw(report.business.syntheticAddress, M + 130, y, 9, regular, ink);
+  
+  y -= 15;
+  page.drawLine({
+    start: { x: M, y: y },
+    end: { x: W - M, y: y },
+    thickness: 0.5,
+    color: muted,
+  });
+  y -= 25;
+  
+  let tempY = y;
+  const drawRowDry = (desc) => {
+    const descLines = lines(desc, regular, 9, CW - 180);
+    tempY -= 32;
+    tempY -= (descLines.length * 12);
+    tempY -= 10;
+  };
+  
+  const filingStatusDesc = sections.filingLabel === 'FLAG' ? 'Filing history shows delays' : sections.filingLabel === 'NOTE' ? 'Filing history unavailable' : 'Returns filed on time';
+  const filingDesc = `${sections.counts.periods} fixture periods. GSTR-3B: ${sections.counts.gstr3b.onTime} on time, ${sections.counts.gstr3b.late} late.`;
+  const courtTitle = sections.courtRecords.length ? `${sections.courtRecords.length} records were returned for review` : 'No records found';
+  
+  const aiDescDry = summaryCopy(summary) + (summaryDetail ? ' \n' + summaryDetail : '');
+  drawRowDry(aiDescDry);
+  drawRowDry(sections.identity.detail);
+  drawRowDry(`Registered: ${report.business.registeredDate} (fictional)`);
+  drawRowDry(filingDesc);
+  drawRowDry(sections.courtDetail);
+  drawRowDry(report.business.context);
+  
+  let limitsHeight = 15 + 13 + (report.cannotFind.length * 13) + 10;
+  
+  const boxTopY = y;
+  const boxHeight = (boxTopY - tempY) + limitsHeight;
+  
+  rounded(M, boxTopY - boxHeight, CW, boxHeight, 10, color('#ffffff'));
+  page.drawSvgPath(
+    `M 0 ${limitsHeight} H ${CW} V 10 Q ${CW} 0 ${CW - 10} 0 H 10 Q 0 0 0 10 Z`,
+    { x: M, y: boxTopY - boxHeight, color: wash },
+  );
+  page.drawSvgPath(
+    `M 10 ${boxHeight} H ${CW - 10} Q ${CW} ${boxHeight} ${CW} ${boxHeight - 10} V 10 Q ${CW} 0 ${CW - 10} 0 H 10 Q 0 0 0 10 V ${boxHeight - 10} Q 0 ${boxHeight} 10 ${boxHeight} Z`,
+    { x: M, y: boxTopY - boxHeight, borderColor: muted, borderWidth: 0.5 },
+  );
+  
+  const drawRow = (label, title, desc, badgeLabel) => {
+    const rowTop = y;
+    draw(label, M + 15, y - 20, 8, bold, muted);
+    draw(title, M + 130, y - 20, 10, bold, ink);
+    const descLines = lines(desc, regular, 9, CW - 180);
+    let curY = y - 32;
+    for (const line of descLines) {
+      draw(line, M + 130, curY, 9, regular, ink);
+      curY -= 12;
+    }
+    
+    const badgeColor = badgeLabel === 'FLAG' ? color('#a33f4a') : badgeLabel === 'CLEAR' ? color('#2d6a48') : badgeLabel === 'NOTE' ? color('#5d4357') : color('#a33f4a');
+    const badgeFill = badgeLabel === 'FLAG' ? color('#fff0f1') : badgeLabel === 'CLEAR' ? color('#eff9f3') : badgeLabel === 'NOTE' ? color('#fbf2f7') : color('#fff0f1');
+    const bWidth = 60;
+    
+    rounded(W - M - bWidth - 15, y - 26, bWidth, 16, 8, badgeFill);
+    const bTextW = bold.widthOfTextAtSize(badgeLabel, 7);
+    draw(badgeLabel, W - M - bWidth - 15 + (bWidth - bTextW) / 2, y - 15, 7, bold, badgeColor);
+    
+    const rowHeight = rowTop - curY + 10;
+    y -= rowHeight;
+    page.drawLine({
+      start: { x: M, y: y },
+      end: { x: W - M, y: y },
+      thickness: 0.5,
+      color: muted,
+    });
+  };
+  
+  
+  const aiTitle = summary.status === 'success' ? 'AI generated' : summary.status === 'loading' ? 'Thinking' : 'Unavailable';
+  const aiDesc = summaryCopy(summary) + (summaryDetail ? ' \n' + summaryDetail : '');
+  drawRow('AI Summary', aiTitle, aiDesc, summary.status === 'success' ? 'CLEAR' : 'NOTE');
+  
+  drawRow('IDENTITY', `${report.business.legalName} is identified on the register`, sections.identity.detail, sections.identity.label);
+  drawRow('REGISTRATION', `Registration status: ${report.business.registrationStatus}`, `Registered: ${report.business.registeredDate} (fictional)`, sections.registrationLabel);
+  drawRow('GST RETURN FILING', filingStatusDesc, filingDesc, sections.filingLabel);
+  drawRow('COURT RECORDS', courtTitle, sections.courtDetail, sections.courtLabel);
+  drawRow('ENTITY CONTEXT', `Entity type: ${report.business.constitution}`, report.business.context, 'NOTE');
+  
+  let limitsY = y - 18;
+  draw('What this check could not find.', M + 15, limitsY, 9, bold, dark);
+  draw('No live systems were queried.', M + 15 + bold.widthOfTextAtSize('What this check could not find. ', 9), limitsY, 9, regular, dark);
+  limitsY -= 13;
+  for (const item of report.cannotFind) {
+      draw(item, M + 15, limitsY, 9, regular, dark);
+      limitsY -= 13;
+  }
+  y -= limitsHeight;
+  y -= 15;
+  
+  const nextCheckLines = lines(nextCheck(report), regular, 9, CW - 130);
+  const nextCheckHeight = 25 + (nextCheckLines.length * 12);
+  rounded(M, y - nextCheckHeight, CW, nextCheckHeight, 6, wash);
+  page.drawSvgPath(
+    `M 6 ${nextCheckHeight} H ${CW - 6} Q ${CW} ${nextCheckHeight} ${CW} ${nextCheckHeight - 6} V 6 Q ${CW} 0 ${CW - 6} 0 H 6 Q 0 0 0 6 V ${nextCheckHeight - 6} Q 0 ${nextCheckHeight} 6 ${nextCheckHeight} Z`,
+    { x: M, y: y - nextCheckHeight, borderColor: color('#ebd7e5'), borderWidth: 0.5 },
+  );
+  draw('NEXT CHECK', M + 15, y - 20, 8, bold, plum);
+  let ncy = y - 20;
+  for (const line of nextCheckLines) {
+    draw(line, M + 110, ncy, 9, regular, ink);
+    ncy -= 12;
+  }
+  y -= (nextCheckHeight + 15);
+
+newPage();
   text('Scope and follow-up', 8, bold, plum);
   y -= 8;
   text('Read with context', 26, serif, plum);
@@ -622,9 +687,13 @@ export async function createSyntheticReportPdf(
   // Add furniture only after pagination resolves so every page has accurate X of Y.
   for (const [index, sheet] of pdf.getPages().entries()) {
     page = sheet;
-    if (logo) page.drawImage(logo, { x: M, y: H - 43, width: 79, height: 18 });
-    else draw('Parakh', M, H - 39, 18, bold, plum);
-    draw('Synthetic due-diligence report', M, H - 60, 8, regular, muted);
+    if (logo) {
+      page.drawImage(logo, { x: M, y: H - 43, width: 79, height: 18 });
+      draw('|', M + 87, H - 39, 14, regular, color('#d8b6cf'));
+      draw('FACTUAL DUE DILIGENCE ENGINE', M + 100, H - 38, 7.5, bold, muted);
+    } else {
+      draw('Parakh | FACTUAL DUE DILIGENCE ENGINE', M, H - 39, 12, bold, plum);
+    }
     const ref = `REF ${report.reportId}`;
     draw(ref, W - M - bold.widthOfTextAtSize(ref, 8), H - 38, 8, bold, dark);
     const pageLabel = `${report.generatedAt} · Page ${index + 1} of ${pdf.getPageCount()}`;
