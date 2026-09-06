@@ -25,7 +25,9 @@ function requestIp(request: Request) {
   );
 }
 
-function serverEnv(name: 'OPENAI_API_KEY' | 'OPENAI_MODEL') {
+function serverEnv(
+  name: 'OPENAI_API_KEY' | 'OPENAI_MODEL' | 'OPENAI_BASE_URL',
+) {
   const processValue =
     typeof process === 'undefined' ? undefined : process.env[name];
   if (processValue) return processValue;
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
     const result = await requestAiAttribution(scenario, record, {
       apiKey,
       model: serverEnv('OPENAI_MODEL') ?? 'gpt-4o-mini',
+      baseUrl: serverEnv('OPENAI_BASE_URL'),
       timeoutMs: 15_000,
     });
     return json(result);

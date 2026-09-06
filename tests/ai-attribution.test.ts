@@ -101,4 +101,37 @@ describe('AI attribution boundary', () => {
       }),
     ).resolves.toMatchObject({ decision: 'ATTRIBUTED', confidence: 'High' });
   });
+
+  it('supports a Bedrock OpenAI-compatible Responses endpoint', async () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-CLEAR-001');
+    const record = scenario?.publicRecords[0];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      expect(input).toBe(
+        'https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1/responses',
+      );
+      expect(init?.headers).toMatchObject({
+        Authorization: 'Bearer bedrock-test-key',
+      });
+      return new Response(
+        JSON.stringify({
+          output_text: JSON.stringify({
+            decision: 'ATTRIBUTED',
+            confidence: 'High',
+            justification: 'The synthetic legal name exactly matches the named party.',
+          }),
+        }),
+        { status: 200 },
+      );
+    };
+
+    await expect(
+      requestAiAttribution(scenario!, record!, {
+        apiKey: 'bedrock-test-key',
+        model: 'openai.gpt-5.6-luna',
+        baseUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1',
+        timeoutMs: 1000,
+        fetchImpl,
+      }),
+    ).resolves.toMatchObject({ decision: 'ATTRIBUTED', confidence: 'High' });
+  });
 });

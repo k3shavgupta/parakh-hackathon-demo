@@ -8,8 +8,11 @@ The demo uses synthetic fixtures; it does not touch production Parakh data.
 Create '.env.local' in the project root:
 
     OPENAI_API_KEY=your-real-local-key
-    # Optional:
     OPENAI_MODEL=gpt-4o-mini
+    # For Bedrock instead:
+    # OPENAI_API_KEY=your-bedrock-api-key
+    # OPENAI_BASE_URL=https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1
+    # OPENAI_MODEL=your-enabled-bedrock-model-id
 
 Use 'OPENAI_API_KEY' exactly. Do not rename it to 'VITE_OPENAI_API_KEY'
 or 'NEXT_PUBLIC_OPENAI_API_KEY'; the key is read by the server route and is

@@ -146,6 +146,7 @@ function extractOutputText(payload: unknown) {
 type OpenAiAttributionOptions = {
   apiKey: string;
   model: string;
+  baseUrl?: string;
   timeoutMs: number;
   fetchImpl?: typeof fetch;
 };
@@ -158,9 +159,12 @@ export async function requestAiAttribution(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
   const fetchImpl = options.fetchImpl ?? fetch;
+  const baseUrl = (
+    options.baseUrl ?? 'https://api.openai.com/v1'
+  ).replace(/\/+$/, '');
 
   try {
-    const response = await fetchImpl('https://api.openai.com/v1/responses', {
+    const response = await fetchImpl(`${baseUrl}/responses`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${options.apiKey}`,
