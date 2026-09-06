@@ -17,4 +17,15 @@ describe('Evidence Lab pipeline copy', () => {
     expect(evidenceLab).toContain('synthetic data only');
     expect(evidenceLab).toContain('does not access live government systems');
   });
+
+  it('renders interactive fixture inspection cards, JSON panels, and labels', () => {
+    expect(evidenceLab).toContain('Fixture -> adapter -> engine -> report schema -> renderer');
+    expect(evidenceLab).toContain('Local fixture JSON');
+    expect(evidenceLab).toContain('Copy JSON');
+    expect(evidenceLab).toContain('Normalized input');
+    expect(evidenceLab).toContain('Derived report fields');
+    expect(evidenceLab).toContain('Why these labels');
+    expect(evidenceLab).toContain('Unavailable data');
+    expect(evidenceLab).toContain('DEMO-2026-000');
+  });
 });

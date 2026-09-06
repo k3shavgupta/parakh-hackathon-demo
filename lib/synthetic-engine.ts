@@ -3,6 +3,10 @@ import {
   type SyntheticLabel,
   type RawPublicRecord,
 } from './synthetic-fixtures';
+import {
+  buildSyntheticV4Evidence,
+  type SyntheticV4Evidence,
+} from './v4-synthetic-adapter';
 
 export type Observation = {
   label: SyntheticLabel;
@@ -66,6 +70,7 @@ export type SyntheticReport = {
     confidence: 'High' | 'Medium' | 'Low';
     provenance: string;
   }[];
+  engine: SyntheticV4Evidence;
   observations: Observation[];
   cannotFind: string[];
   generationSteps: string[];
@@ -423,6 +428,24 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
   }
 
   const observations = buildObservations(scenario);
+  const scenarioIndex = RAW_SYNTHETIC_SCENARIOS.findIndex(
+    (item) => item.identifier === scenario.identifier,
+  );
+  const demoReference =
+    scenarioIndex >= 0
+      ? `DEMO-2026-000${scenarioIndex + 1}`
+      : normalizedIdentifier;
+
+  const engine = buildSyntheticV4Evidence(
+    demoReference,
+    {
+      legalName: scenario.business.legalName,
+      tradeName: scenario.business.tradeName,
+      nameVariants: scenario.business.nameVariants,
+    },
+    scenario.publicRecords,
+  );
+
   const rows = scenario.filings.map((filing) => ({
     period: filing.period,
     month: formatPeriod(filing.period),
@@ -486,6 +509,7 @@ export function buildSyntheticReport(identifier: string): SyntheticReport {
       confidence: record.confidence,
       provenance: record.source,
     })),
+    engine,
     observations,
     cannotFind: scenario.unavailable,
     generationSteps: [
