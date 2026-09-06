@@ -450,11 +450,11 @@ export default function Home() {
       <section
         id="reasoning"
         aria-labelledby="reasoning-heading"
-        className="scroll-mt-6 mx-2 mb-5 rounded-[30px] bg-white px-5 py-16 sm:mx-4 sm:px-8 sm:py-24"
+        className="scroll-mt-6 mx-2 mb-5 rounded-[30px] bg-[var(--parakh-wash)] px-5 py-16 sm:mx-4 sm:px-8 sm:py-24"
       >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[var(--parakh-wash)] px-3 text-xs font-semibold text-[var(--parakh-plum-dark)]">
+            <p className="inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-3 text-xs font-semibold text-[var(--parakh-plum-dark)] shadow-[0_1px_2px_rgba(42,24,31,0.04)]">
               <BrainCircuit className="size-3.5 text-[var(--parakh-plum)]" />
               Round 2 capability · AI Attribution Reasoning
             </p>
@@ -475,9 +475,9 @@ export default function Home() {
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+            <article className="rounded-[24px] bg-white p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
               <div className="flex items-center justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--parakh-wash)] text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.04)]">
                   <FileSearch className="size-5" />
                 </span>
                 <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
@@ -490,9 +490,9 @@ export default function Home() {
               </p>
             </article>
 
-            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+            <article className="rounded-[24px] bg-white p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
               <div className="flex items-center justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--parakh-wash)] text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.04)]">
                   <ShieldCheck className="size-5" />
                 </span>
                 <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
@@ -505,9 +505,9 @@ export default function Home() {
               </p>
             </article>
 
-            <article className="rounded-[24px] bg-[var(--parakh-bg)] p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
+            <article className="rounded-[24px] bg-white p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
               <div className="flex items-center justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-white text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.06)]">
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--parakh-wash)] text-[var(--parakh-plum)] shadow-[0_1px_2px_rgba(42,24,31,0.04)]">
                   <Scale className="size-5" />
                 </span>
                 <span className="rounded-full bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum-dark)]">
@@ -521,29 +521,29 @@ export default function Home() {
             </article>
           </div>
 
-          <div className="mt-8 rounded-[24px] border border-[#e7d7e3] bg-[var(--parakh-wash)] p-6 text-left">
+          <div className="mt-8 rounded-[24px] border border-[#e7d7e3] bg-white p-6 text-left shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#ebd7e5] pb-4">
               <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-lg bg-white text-[var(--parakh-plum)]">
+                <span className="grid size-8 place-items-center rounded-lg bg-[var(--parakh-wash)] text-[var(--parakh-plum)]">
                   <BrainCircuit className="size-4" />
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-[var(--parakh-plum-dark)]">SPECIMEN PREVIEW</p>
-                  <p className="text-sm font-semibold text-[var(--parakh-ink)]">AI Attribution Reasoning</p>
+                  <p className="text-sm font-semibold text-[var(--parakh-ink)]">AI Attribution Reasoning Card</p>
                 </div>
               </div>
-              <span className="rounded-full border border-[#2d6a48]/20 bg-white px-3 py-1 text-xs font-semibold text-[#1f6b3a]">
+              <span className="rounded-full border border-[#2d6a48]/20 bg-[#eff9f3] px-3 py-1 text-xs font-semibold text-[#1f6b3a]">
                 ATTRIBUTED
               </span>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum)]">
                 <span className="font-normal text-[#675a62]">Name similarity:</span> High
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum)]">
                 <span className="font-normal text-[#675a62]">PAN pattern:</span> Match
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#7a336f]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d8b8cf] bg-[var(--parakh-wash)] px-2.5 py-0.5 text-xs font-semibold text-[var(--parakh-plum)]">
                 <span className="font-normal text-[#675a62]">Filing overlap:</span> High
               </span>
             </div>
@@ -553,8 +553,8 @@ export default function Home() {
             <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#8b7c84]">
               <span className="inline-flex items-center gap-1.5 font-medium text-[var(--parakh-ink)]">
                 <span>Confidence High</span>
-                <span className="inline-flex h-2 w-14 overflow-hidden rounded-full bg-[#f2e3ed]">
-                  <span className="h-full w-full rounded-full bg-[#7a336f]" />
+                <span className="inline-flex h-2 w-14 overflow-hidden rounded-full bg-[var(--parakh-blush)]">
+                  <span className="h-full w-full rounded-full bg-[var(--parakh-plum)]" />
                 </span>
               </span>
               <span>·</span>
