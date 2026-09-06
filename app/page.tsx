@@ -384,64 +384,67 @@ export default function Home() {
         aria-labelledby="clarity-heading"
         className="mx-auto max-w-7xl px-5 py-18 sm:px-8 sm:py-24"
       >
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <div className="grid gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
-            <p className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[var(--parakh-wash)] px-3 text-xs font-semibold text-[var(--parakh-plum-dark)]">
-              <Scale className="size-3.5" />
+            <p className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[var(--parakh-wash)] px-4 py-1 text-xs sm:text-sm font-semibold text-[var(--parakh-plum-dark)] border border-[var(--parakh-blush)]">
+              <Scale className="size-4 text-[var(--parakh-plum)]" />
               Why this is clearer
             </p>
             <h2
               id="clarity-heading"
-              className="mt-5 text-[clamp(2.5rem,4.5vw,4.1rem)] font-medium leading-[1.06] tracking-[-0.025em]"
+              className="mt-6 text-[clamp(2.6rem,4.8vw,4.3rem)] font-medium leading-[1.05] tracking-[-0.025em] text-[var(--parakh-ink)]"
             >
               Less hunting. More{' '}
-              <span className="font-serif text-[1.04em] font-normal italic text-[var(--parakh-plum)]">
+              <span className="font-serif text-[1.08em] font-normal italic text-[var(--parakh-plum)]">
                 context.
               </span>
             </h2>
-            <p className="mt-5 max-w-xl leading-7 text-[#675a62]">
-              Today, a counterparty check can mean portal searches, screenshots,
-              filing tables, name variants, and uncertain public-record clues.
-              Parakh puts the available evidence beside the language needed to
-              interpret it responsibly.
+            <p className="mt-6 max-w-xl text-lg sm:text-xl leading-relaxed text-[var(--parakh-ink)]/80 font-normal">
+              Today, checking a counterparty means juggling portal searches, screenshots,
+              filing tables, and confusing name variants. Parakh organizes the evidence
+              cleanly and explains what every record means in simple, plain English.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <article className="rounded-[24px] bg-white p-6 shadow-[0_1px_3px_rgba(42,24,31,0.06)]">
-              <p className="text-xs font-semibold text-[#9a8992]">
-                THE MANUAL WAY
-              </p>
-              <ul className="mt-5 space-y-3 text-sm leading-6 text-[#6c5f66]">
-                {[
-                  'Different portals and screenshots',
-                  'Periods that are hard to compare',
-                  'Name variations without context',
-                  'Missing evidence left unexplained',
-                ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#be9daf]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <article className="rounded-[28px] bg-white p-7 sm:p-8 shadow-[0_4px_24px_rgba(32,27,30,0.05)] border border-[#ede3eb] flex flex-col justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-bold tracking-wider text-[#82717c] uppercase">
+                  THE MANUAL WAY
+                </p>
+                <ul className="mt-6 space-y-4 text-base sm:text-[17px] font-medium leading-snug text-[var(--parakh-ink)]">
+                  {[
+                    'Different portals and screenshots',
+                    'Filing periods that are hard to compare',
+                    'Name variations without context',
+                    'Missing evidence left unexplained',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-2 size-2 shrink-0 rounded-full bg-[#be9daf]" />
+                      <span className="text-[#40353c]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </article>
-            <article className="rounded-[24px] bg-[var(--parakh-wash)] p-6">
-              <p className="text-xs font-semibold text-[var(--parakh-plum-dark)]">
-                THE PARAKH VIEW
-              </p>
-              <ul className="mt-5 space-y-3 text-sm leading-6 text-[#5d4357]">
-                {[
-                  'Normalized period-by-period evidence',
-                  'Source and provenance labels',
-                  'Confidence with attribution',
-                  'Clear limits and what was not found',
-                ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[var(--parakh-plum)]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+            <article className="rounded-[28px] bg-[var(--parakh-wash)] p-7 sm:p-8 border border-[var(--parakh-blush)] shadow-[0_4px_24px_rgba(122,51,111,0.04)] flex flex-col justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-bold tracking-wider text-[var(--parakh-plum-dark)] uppercase">
+                  THE PARAKH VIEW
+                </p>
+                <ul className="mt-6 space-y-4 text-base sm:text-[17px] font-medium leading-snug text-[var(--parakh-ink)]">
+                  {[
+                    'Normalized period-by-period evidence',
+                    'Clear source and provenance labels',
+                    'Confidence score with AI attribution',
+                    'Clear limits and what was not found',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <Check className="mt-0.5 size-5 shrink-0 text-[var(--parakh-plum)]" />
+                      <span className="text-[var(--parakh-ink)] font-semibold">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </article>
           </div>
         </div>
