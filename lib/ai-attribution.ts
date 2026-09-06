@@ -143,6 +143,28 @@ function extractOutputText(payload: unknown) {
   return textParts.length ? textParts.join('') : null;
 }
 
+async function providerErrorDetail(response: Response) {
+  try {
+    const payload: unknown = await response.json();
+    if (
+      typeof payload === 'object' &&
+      payload !== null &&
+      !Array.isArray(payload)
+    ) {
+      const error = (payload as { error?: unknown }).error;
+      if (typeof error === 'object' && error !== null && !Array.isArray(error)) {
+        const message = (error as { message?: unknown }).message;
+        if (typeof message === 'string') return message.slice(0, 240);
+      }
+      const message = (payload as { message?: unknown }).message;
+      if (typeof message === 'string') return message.slice(0, 240);
+    }
+  } catch {
+    // Keep provider diagnostics optional when the response is not JSON.
+  }
+  return null;
+}
+
 type OpenAiAttributionOptions = {
   apiKey: string;
   model: string;
@@ -216,7 +238,10 @@ export async function requestAiAttribution(
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI attribution request failed with ${response.status}`);
+      const detail = await providerErrorDetail(response);
+      throw new Error(
+        `OpenAI attribution request failed with ${response.status}${detail ? `: ${detail}` : ''}`,
+      );
     }
 
     const outputText = extractOutputText(await response.json());

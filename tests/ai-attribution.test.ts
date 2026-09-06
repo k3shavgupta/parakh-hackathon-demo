@@ -134,4 +134,25 @@ describe('AI attribution boundary', () => {
       }),
     ).resolves.toMatchObject({ decision: 'ATTRIBUTED', confidence: 'High' });
   });
+
+  it('retains a sanitized provider error detail for server-side diagnostics', async () => {
+    const scenario = getSyntheticScenario('SYN-GSTIN-CLEAR-001');
+    const record = scenario?.publicRecords[0];
+    const fetchImpl: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({
+          error: { message: 'Model access is not enabled for this account.' },
+        }),
+        { status: 403 },
+      );
+
+    await expect(
+      requestAiAttribution(scenario!, record!, {
+        apiKey: 'server-only-test-key',
+        model: 'test-model',
+        timeoutMs: 1000,
+        fetchImpl,
+      }),
+    ).rejects.toThrow('403: Model access is not enabled for this account.');
+  });
 });

@@ -96,7 +96,11 @@ export async function POST(request: Request) {
       timeoutMs: 15_000,
     });
     return json(result);
-  } catch {
+  } catch (error) {
+    console.error(
+      '[ai-attribution] provider failure',
+      error instanceof Error ? error.message : 'unknown provider error',
+    );
     return json({ error: 'AI reasoning is temporarily unavailable.' }, 502);
   }
 }
