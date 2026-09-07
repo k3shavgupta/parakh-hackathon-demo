@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { confidencePercent } from './ai-attribution';
 import type { SyntheticReport } from './synthetic-engine';
+import type { SyntheticLabel } from './synthetic-fixtures';
 import {
   summaryCopy,
   type ReportAiReasoningState,
@@ -503,7 +504,7 @@ export async function createSyntheticReportPdf(
   y -= 25;
   
   let tempY = y;
-  const drawRowDry = (desc) => {
+  const drawRowDry = (desc: string) => {
     const descLines = lines(desc, regular, 9, CW - 180);
     tempY -= 32;
     tempY -= (descLines.length * 12);
@@ -522,7 +523,7 @@ export async function createSyntheticReportPdf(
   drawRowDry(sections.courtDetail);
   drawRowDry(report.business.context);
   
-  let limitsHeight = 15 + 13 + (report.cannotFind.length * 13) + 10;
+  const limitsHeight = 15 + 13 + (report.cannotFind.length * 13) + 10;
   
   const boxTopY = y;
   const boxHeight = (boxTopY - tempY) + limitsHeight;
@@ -537,7 +538,12 @@ export async function createSyntheticReportPdf(
     { x: M, y: boxTopY - boxHeight, borderColor: muted, borderWidth: 0.5 },
   );
   
-  const drawRow = (label, title, desc, badgeLabel) => {
+  const drawRow = (
+    label: string,
+    title: string,
+    desc: string,
+    badgeLabel: SyntheticLabel,
+  ) => {
     const rowTop = y;
     draw(label, M + 15, y - 20, 8, bold, muted);
     draw(title, M + 130, y - 20, 10, bold, ink);

@@ -74,6 +74,7 @@ function Sheet({
     <article className="report-sheet">
       <header className="report-page-header">
         <div className="report-page-header__brand flex items-center gap-3">
+          {/* oxlint-disable-next-line no-img-element -- Static local brand asset keeps the printable report header deterministic. */}
           <img
             src="/assets/logo-horizontal.svg"
             alt="Parakh"
