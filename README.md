@@ -1,4 +1,4 @@
-# Parakh Build What Moves India Demo
+# Parakh Build 
 
 This is a standalone public hackathon demo for Parakh. It is not the production
 Parakh app and does not use production data, auth, payments, databases,
